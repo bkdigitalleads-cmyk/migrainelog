@@ -1,0 +1,27 @@
+:root { --bg:#1A191C; --sheet:#222125; --ink:#D6D1C9; --sub:#A7A29B; --faint:#7D7973; --rule:#333137; --live:#B98B5E; --onlive:#19181B; }
+@media (prefers-color-scheme: light) {
+  :root { --bg:#ECE8E2; --sheet:#F4F1EC; --ink:#2A2730; --sub:#57535D; --faint:#85808A; --rule:#D4CEC5; --live:#9A6C40; --onlive:#F8F4EE; }
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; line-height:1.6; font-size:17px; }
+.wrap { max-width:720px; margin:0 auto; padding:40px 22px 64px; }
+h1, h2, .brand { font-family:"Nunito","Avenir Next","Segoe UI",Helvetica,Arial,sans-serif; font-weight:600; }
+h1 { font-size:36px; line-height:1.18; margin:18px 0 10px; }
+h2 { font-size:24px; margin:40px 0 8px; }
+h3 { font-size:18px; margin:24px 0 4px; }
+p { margin:8px 0; }
+a { color:var(--ink); text-decoration-thickness:1.5px; text-underline-offset:3px; }
+.brand { display:flex; align-items:center; gap:10px; font-size:21px; color:var(--ink); text-decoration:none; }
+.brand img { border-radius:8px; }
+.tag { color:var(--sub); font-size:19px; }
+.cta { display:inline-block; background:var(--live); color:var(--onlive); font-weight:700; padding:15px 28px; border-radius:18px; text-decoration:none; margin:14px 0 4px; }
+.small { color:var(--faint); font-size:14px; }
+.rows { margin-top:22px; border-top:1px solid var(--rule); }
+.rows div { padding:14px 0; border-bottom:1px solid var(--rule); }
+.rows b { display:block; font-family:"Nunito","Avenir Next",Helvetica,Arial,sans-serif; font-weight:600; font-size:19px; }
+.shots { display:flex; gap:12px; overflow-x:auto; margin:26px 0 6px; padding-bottom:8px; }
+.shots img { width:200px; height:auto; border-radius:22px; border:1px solid var(--rule); flex:none; }
+.note { background:var(--sheet); border:1px solid var(--rule); border-radius:16px; padding:14px 18px; color:var(--sub); margin-top:26px; }
+.faq h3 { margin:22px 0 4px; }
+footer { margin-top:56px; padding-top:18px; border-top:1px solid var(--rule); color:var(--faint); font-size:14px; }
+footer a { margin-right:14px; color:var(--sub); }

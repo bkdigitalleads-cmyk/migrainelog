@@ -1,0 +1,73 @@
+{
+  "expo": {
+    "name": "Migraine Log",
+    "slug": "migrainelog",
+    "scheme": "migrainelog",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#1A191C",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.bwk.migrainelog",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationCategoryType": "public.app-category.medical"
+      }
+    },
+    "android": {
+      "package": "com.bwk.migrainelog",
+      "adaptiveIcon": {
+        "backgroundColor": "#1A191C",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-sqlite",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120,
+          "resizeMode": "contain",
+          "backgroundColor": "#1A191C",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#1A191C"
+          }
+        }
+      ],
+      [
+        "expo-quick-actions",
+        {
+          "iosActions": [
+            {
+              "id": "start",
+              "title": "Attack started",
+              "icon": "symbol:waveform.path"
+            }
+          ]
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      "./plugins/withoutPushEntitlement"
+    ],
+    "extra": {
+      "revenueCatApiKeyIos": "TODO_COWORK_REVENUECAT_PUBLIC_IOS_KEY",
+      "eas": {
+        "projectId": "TODO_COWORK_EXPO_PROJECT_ID"
+      }
+    },
+    "owner": "bkdeveloper123"
+  }
+}
