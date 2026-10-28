@@ -1,14 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme, fonts, radius } from '../theme';
+import { useTheme, radius, space, type } from '../theme';
 import { useApp } from '../state';
 import { buildReport, REPORT_RANGES, ReportRange } from '../report';
 import { gate, reportAccess } from '../gates';
 import { printReport, shareCsv, shareReport } from '../exporting';
 import { maybeRequestReview } from '../reviews';
-import { Button, Label, ProTag, ScreenTitle, Segment } from '../ui/Kit';
-import { ReportPage } from '../ui/Drawings';
+import { Button, Card, Label, ProTag, ScreenTitle, Segment } from '../ui/Kit';
 import ReportPreview from './ReportPreview';
 
 const RANGES = REPORT_RANGES.map((n) => ({ id: String(n) as `${ReportRange}`, label: `${n} days` }));
@@ -57,42 +56,40 @@ export default function ReportScreen() {
   return (
     <View style={{ flex: 1 }}>
       <ScreenTitle theme={theme} title="Report" />
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 28 }} keyboardShouldPersistTaps="handled">
-        <View style={styles.hero}>
-          <ReportPage theme={theme} size={170} compact />
-        </View>
-        <Text style={[styles.lead, { color: theme.ink }]}>A report your doctor or insurer can read in 20 seconds.</Text>
-        <Text style={[styles.sub, { color: theme.inkSoft }]}>
-          Headache days and migraine days per month, attacks of 4 hours or more, medication days by type, preventives you tried and why they stopped, then a day-by-day calendar and every attack.
+      <ScrollView contentContainerStyle={[styles.page, { paddingBottom: insets.bottom + space.xxl }]} keyboardShouldPersistTaps="handled">
+        <Text style={[type.heading, { color: theme.ink }]}>A report your doctor or insurer can read in 20 seconds.</Text>
+        <Text style={[type.body, styles.sub, { color: theme.inkSoft }]}>
+          Headache days, migraine days, long attacks, medication days and preventives tried, on one page.
         </Text>
 
-        <Label theme={theme} style={styles.label}>
-          Days to include
-        </Label>
-        <Segment theme={theme} label="Days to include" options={RANGES} value={range} onChange={(v) => v && setRange(v)} />
-
-        <Label theme={theme} style={styles.label}>
-          Name on the report, optional
-        </Label>
-        <TextInput
-          value={settings.patientName}
-          onChangeText={(patientName) => updateSettings({ patientName })}
-          placeholder="Left blank, there is a line to write it"
-          placeholderTextColor={theme.inkFaint}
-          style={[styles.input, { color: theme.ink, backgroundColor: theme.raised, borderColor: theme.rule }]}
-          keyboardAppearance={theme.isDark ? 'dark' : 'light'}
-          autoCorrect={false}
-          maxLength={80}
-          accessibilityLabel="Name on the report"
-        />
+        <Card theme={theme} style={styles.card}>
+          <View>
+            <Label theme={theme}>Days to include</Label>
+            <Segment theme={theme} required label="Days to include" options={RANGES} value={range} onChange={(v) => v && setRange(v)} />
+          </View>
+          <View>
+            <Label theme={theme}>Name on the report, optional</Label>
+            <TextInput
+              value={settings.patientName}
+              onChangeText={(patientName) => updateSettings({ patientName })}
+              placeholder="Left blank, there is a line to write it"
+              placeholderTextColor={theme.inkFaint}
+              style={[styles.input, { color: theme.ink, backgroundColor: theme.raised, borderColor: theme.edge }]}
+              keyboardAppearance={theme.isDark ? 'dark' : 'light'}
+              autoCorrect={false}
+              maxLength={80}
+              accessibilityLabel="Name on the report"
+            />
+          </View>
+        </Card>
 
         <View style={styles.actions}>
           <Button theme={theme} live glyph="document" label="Preview the report" onPress={openPreview} />
           <View style={styles.pair}>
-            <View style={{ flex: 1 }}>
+            <View style={styles.half}>
               <Button theme={theme} glyph="share" label="Share PDF" onPress={() => run('share')} disabled={busy} />
             </View>
-            <View style={{ flex: 1 }}>
+            <View style={styles.half}>
               <Button theme={theme} glyph="print" label="Print" onPress={() => run('print')} disabled={busy} />
             </View>
           </View>
@@ -100,12 +97,12 @@ export default function ReportScreen() {
           {!isPro ? (
             <View style={styles.proLine}>
               <ProTag theme={theme} />
-              <Text style={[styles.proText, { color: theme.inkSoft }]}>Sharing, printing and the CSV are part of Pro. The preview is free.</Text>
+              <Text style={[type.small, styles.half, { color: theme.inkSoft }]}>Sharing, printing and the CSV are part of Pro. The preview is free.</Text>
             </View>
           ) : null}
         </View>
 
-        <Text style={[styles.foot, { color: theme.inkFaint }]}>
+        <Text style={[type.small, styles.foot, { color: theme.inkFaint }]}>
           The report says what you logged. It is not a diagnosis. Made on this iPhone; it goes only where you send it.
         </Text>
       </ScrollView>
@@ -127,14 +124,13 @@ export default function ReportScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: { alignItems: 'center', marginTop: 4 },
-  lead: { fontFamily: fonts.display, fontSize: 21, lineHeight: 27, marginTop: 6 },
-  sub: { fontSize: 16, lineHeight: 22, marginTop: 6 },
-  label: { marginTop: 22 },
-  input: { minHeight: 50, borderRadius: radius.card, borderWidth: StyleSheet.hairlineWidth, paddingHorizontal: 14, fontSize: 17 },
-  actions: { gap: 10, marginTop: 24 },
-  pair: { flexDirection: 'row', gap: 10 },
-  proLine: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
-  proText: { flex: 1, fontSize: 14, lineHeight: 19 },
-  foot: { fontSize: 13, lineHeight: 18, marginTop: 24 },
+  page: { paddingHorizontal: space.l, paddingTop: space.s },
+  sub: { marginTop: space.s },
+  card: { marginTop: space.xl, gap: space.xl },
+  input: { minHeight: 48, borderRadius: radius.small, borderWidth: 1, paddingHorizontal: space.m, fontSize: type.body.fontSize },
+  actions: { gap: space.m, marginTop: space.xl },
+  pair: { flexDirection: 'row', gap: space.m },
+  half: { flex: 1 },
+  proLine: { flexDirection: 'row', alignItems: 'center', gap: space.s, marginTop: space.xs },
+  foot: { marginTop: space.xl },
 });

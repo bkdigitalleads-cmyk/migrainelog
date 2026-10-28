@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Theme, fonts } from '../theme';
+import { Theme, space, type } from '../theme';
 import Glyph, { GlyphName } from './Glyph';
 import { Press } from './Kit';
 
@@ -19,7 +19,7 @@ const TABS: { id: Tab; label: string; glyph: GlyphName }[] = [
 export default function TabBar({ theme, tab, onTab, proTabs = [] }: { theme: Theme; tab: Tab; onTab: (t: Tab) => void; proTabs?: Tab[] }) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.bar, { backgroundColor: theme.bg, borderTopColor: theme.rule, paddingBottom: Math.max(insets.bottom - 6, 6) }]} accessibilityRole="tablist">
+    <View style={[styles.bar, { backgroundColor: theme.bg, borderTopColor: theme.edge, paddingBottom: Math.max(insets.bottom - space.s, space.s) }]} accessibilityRole="tablist">
       {TABS.map((t) => {
         const on = t.id === tab;
         const color = on ? theme.ink : theme.inkFaint;
@@ -35,7 +35,7 @@ export default function TabBar({ theme, tab, onTab, proTabs = [] }: { theme: The
           >
             <Glyph name={t.glyph} size={26} color={color} weight={on ? 2.1 : 1.8} />
             <View style={styles.labelRow}>
-              <Text style={[styles.label, { color }]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
+              <Text style={[type.small, { color }]} numberOfLines={1} maxFontSizeMultiplier={1.2} adjustsFontSizeToFit>
                 {t.label}
               </Text>
             </View>
@@ -47,8 +47,7 @@ export default function TabBar({ theme, tab, onTab, proTabs = [] }: { theme: The
 }
 
 const styles = StyleSheet.create({
-  bar: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 6 },
-  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 52, gap: 2 },
-  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  label: { fontSize: 11, fontFamily: fonts.display, letterSpacing: 0.1 },
+  bar: { flexDirection: 'row', borderTopWidth: 1, paddingTop: space.s },
+  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 52, gap: space.xs },
+  labelRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
 });

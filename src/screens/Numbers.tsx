@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme, fonts, tabular, Theme } from '../theme';
+import { useTheme, space, tabular, type, Theme } from '../theme';
 import { useApp } from '../state';
 import { dayKey, monthLabel, parseDay, shiftMonth, shortDate } from '../days';
 import { formatDuration, medNotes, medNoteText, monthWindow, numbersFor, rollingWindow } from '../insights';
@@ -37,7 +37,7 @@ export default function NumbersScreen({ onReport }: { onReport: () => void }) {
     return (
       <View style={{ flex: 1 }}>
         <ScreenTitle theme={theme} title="Numbers" />
-        <ScrollView contentContainerStyle={[styles.lockedWrap, { paddingBottom: insets.bottom + 24 }]}>
+        <ScrollView contentContainerStyle={[styles.lockedWrap, { paddingBottom: insets.bottom + space.xl }]}>
           <MonthAtAGlance theme={theme} size={190} />
           <Text style={[styles.lockedTitle, { color: theme.ink }]}>Your month in numbers.</Text>
           <Text style={[styles.lockedLine, { color: theme.inkSoft }]}>
@@ -58,7 +58,7 @@ export default function NumbersScreen({ onReport }: { onReport: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <ScreenTitle theme={theme} title="Numbers" />
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 28 }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: space.l, paddingBottom: insets.bottom + space.xxl }}>
         <Segment<Scope> theme={theme} label="Which days" options={SCOPES} value={scope} onChange={(v) => v && setScope(v)} />
         {scope === 'month' ? (
           <View style={styles.monthRow}>
@@ -76,7 +76,7 @@ export default function NumbersScreen({ onReport }: { onReport: () => void }) {
           <Numeral theme={theme} value={String(n.headacheDays)} label="Headache days" sub={`of ${n.dayCount}`} />
           <Numeral theme={theme} value={String(n.migraineDays)} label="Migraine days" />
           <Numeral theme={theme} value={String(n.longDays)} label={`Days with ${noun(track)}s of 4\u00a0hours or more`} />
-          <Numeral theme={theme} value={n.averageMs != null ? formatDuration(n.averageMs) : 'None'} label="Average length" sub={`${n.attackCount} ${n.attackCount === 1 ? noun(track) : `${noun(track)}s`}`} />
+          <Numeral theme={theme} value={n.averageMs != null ? formatDuration(n.averageMs) : 'None'} label="Average length" sub={`over ${n.attackCount} ${n.attackCount === 1 ? noun(track) : `${noun(track)}s`}`} />
         </View>
         <Text style={[styles.logged, { color: theme.inkFaint }, tabular]}>
           {`${n.loggedDays} of ${n.dayCount} days have an entry. Days without one are not counted as headache-free.`}
@@ -86,10 +86,10 @@ export default function NumbersScreen({ onReport }: { onReport: () => void }) {
           {kinds.length === 0 ? (
             <Text style={[styles.none, { color: theme.inkSoft }]}>No medication logged.</Text>
           ) : (
-            kinds.map((k) => {
+            kinds.map((k, i) => {
               const note = notes.find((x) => x.kind === k);
               return (
-                <View key={k} style={[styles.medRow, { borderBottomColor: theme.rule }]}>
+                <View key={k} style={[styles.medRow, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule }]}>
                   <View style={styles.medTop} accessible accessibilityLabel={`${medKindLabel(k)}: ${n.medDays[k]} days`}>
                     <Text style={[styles.medName, { color: theme.ink }]}>{medKindLabel(k)}</Text>
                     <Text style={[styles.medDays, { color: theme.ink }, tabular]}>{`${n.medDays[k]} ${n.medDays[k] === 1 ? 'day' : 'days'}`}</Text>
@@ -104,7 +104,7 @@ export default function NumbersScreen({ onReport }: { onReport: () => void }) {
             })
           )}
           {kinds.length > 0 ? (
-            <Text style={[styles.total, { color: theme.inkSoft }, tabular]}>{`Any acute medication: ${n.acuteMedDays} ${n.acuteMedDays === 1 ? 'day' : 'days'}`}</Text>
+            <Text style={[styles.total, { color: theme.inkSoft, borderTopColor: theme.rule }, tabular]}>{`Any acute medication: ${n.acuteMedDays} ${n.acuteMedDays === 1 ? 'day' : 'days'}`}</Text>
           ) : null}
         </Section>
 
@@ -112,8 +112,8 @@ export default function NumbersScreen({ onReport }: { onReport: () => void }) {
           {n.triggers.length === 0 ? (
             <Text style={[styles.none, { color: theme.inkSoft }]}>None noted.</Text>
           ) : (
-            n.triggers.slice(0, 5).map((t) => (
-              <View key={t.id} style={[styles.trigRow, { borderBottomColor: theme.rule }]} accessible accessibilityLabel={`${triggerLabel(t.id)}, ${t.count}`}>
+            n.triggers.slice(0, 5).map((t, i) => (
+              <View key={t.id} style={[styles.trigRow, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule }]} accessible accessibilityLabel={`${triggerLabel(t.id)}, ${t.count}`}>
                 <Text style={[styles.trigName, { color: theme.ink }]}>{triggerLabel(t.id)}</Text>
                 <Text style={[styles.trigCount, { color: theme.inkSoft }, tabular]}>{`${t.count} of ${n.attackCount}`}</Text>
               </View>
@@ -125,7 +125,7 @@ export default function NumbersScreen({ onReport }: { onReport: () => void }) {
           <Text style={[styles.none, { color: theme.ink }, tabular]}>{`Missed ${n.missedDays} ${n.missedDays === 1 ? 'day' : 'days'}, reduced ${n.reducedDays} ${n.reducedDays === 1 ? 'day' : 'days'}.`}</Text>
         </Section>
 
-        <Card theme={theme} style={{ marginTop: 26, gap: 10 }}>
+        <Card theme={theme} style={styles.bring}>
           <Text style={[styles.cardText, { color: theme.ink }]}>Bring these to your next visit.</Text>
           <Button theme={theme} glyph="document" label="Make the report" onPress={onReport} />
         </Card>
@@ -135,34 +135,43 @@ export default function NumbersScreen({ onReport }: { onReport: () => void }) {
   );
 }
 
+/** A heading, then the rows in a card. */
 function Section({ theme, title, children }: { theme: Theme; title: string; children: React.ReactNode }) {
   return (
-    <View style={{ marginTop: 26 }}>
-      <Label theme={theme}>{title}</Label>
-      {children}
+    <View style={styles.section}>
+      <Text style={[type.heading, styles.sectionTitle, { color: theme.ink }]} accessibilityRole="header">
+        {title}
+      </Text>
+      <Card theme={theme} style={styles.sectionCard}>
+        {children}
+      </Card>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  lockedWrap: { alignItems: 'center', paddingHorizontal: 24, paddingTop: 20, gap: 14 },
-  lockedTitle: { fontFamily: fonts.display, fontSize: 24, textAlign: 'center' },
-  lockedLine: { fontSize: 17, lineHeight: 24, textAlign: 'center', marginBottom: 6 },
-  monthRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
-  month: { fontFamily: fonts.display, fontSize: 19 },
-  range: { fontSize: 15, marginTop: 12 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 16, marginTop: 10 },
-  logged: { fontSize: 14, lineHeight: 19, marginTop: 6 },
-  none: { fontSize: 16 },
-  medRow: { paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  lockedWrap: { alignItems: 'center', paddingHorizontal: space.xl, paddingTop: space.l, gap: space.l },
+  lockedTitle: { ...type.heading, textAlign: 'center' },
+  lockedLine: { ...type.body, textAlign: 'center', marginBottom: space.s },
+  monthRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: space.s },
+  month: { ...type.heading },
+  range: { ...type.small, marginTop: space.m },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.m, marginTop: space.m },
+  logged: { ...type.small, marginTop: space.m },
+  section: { marginTop: space.xxl },
+  sectionTitle: { marginBottom: space.s },
+  sectionCard: { paddingVertical: space.xs },
+  none: { ...type.body, paddingVertical: space.m },
+  medRow: { paddingVertical: space.m },
   medTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  medName: { fontSize: 17 },
-  medDays: { fontFamily: fonts.number, fontSize: 22 },
-  note: { fontSize: 15, lineHeight: 21, marginTop: 8, paddingLeft: 10, borderLeftWidth: 2 },
-  total: { fontSize: 15, marginTop: 10 },
-  trigRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
-  trigName: { fontSize: 17 },
-  trigCount: { fontSize: 16 },
-  cardText: { fontFamily: fonts.display, fontSize: 18 },
-  foot: { fontSize: 13, textAlign: 'center', marginTop: 16 },
+  medName: { ...type.body },
+  medDays: { ...type.heading },
+  note: { ...type.small, marginTop: space.s, paddingLeft: space.m, borderLeftWidth: 2 },
+  total: { ...type.small, paddingVertical: space.m, borderTopWidth: StyleSheet.hairlineWidth },
+  trigRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: space.m },
+  trigName: { ...type.body },
+  trigCount: { ...type.body },
+  bring: { marginTop: space.xxl, gap: space.m },
+  cardText: { ...type.heading },
+  foot: { ...type.small, textAlign: 'center', marginTop: space.l },
 });

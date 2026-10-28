@@ -122,3 +122,19 @@ export function time24(ms: number): string {
   const d = new Date(ms);
   return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
+
+/** "3 pm", or "3:30 pm" when not on the hour. */
+export function hourLabel(ms: number): string {
+  const d = new Date(ms);
+  const h = d.getHours();
+  const m = d.getMinutes();
+  return `${h % 12 === 0 ? 12 : h % 12}${m === 0 ? '' : `:${pad(m)}`} ${h < 12 ? 'am' : 'pm'}`;
+}
+
+/** When something happened, as short as it can be: "today, 3 pm", "yesterday, 9:30 am", "Sun, 3 pm", "Oct 3, 3 pm". */
+export function whenShort(ms: number, now: number): string {
+  const day = dayKey(ms);
+  const ago = daysBetween(day, dayKey(now));
+  const which = ago === 0 ? 'today' : ago === 1 ? 'yesterday' : ago > 1 && ago < 7 ? WEEKDAYS[weekdayMon(day)] : shortDate(day, day.slice(0, 4) !== dayKey(now).slice(0, 4));
+  return `${which}, ${hourLabel(ms)}`;
+}

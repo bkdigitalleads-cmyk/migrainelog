@@ -1,12 +1,13 @@
 import React from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
-import { Theme, fonts } from '../theme';
+import { Theme, radius, space, type } from '../theme';
 import Glyph from './Glyph';
 import { Press } from './Kit';
 
 /**
- * Lists: a heading, then full-bleed lines split by hairlines. No boxes
- * around groups, so a screen reads top to bottom without visual noise.
+ * Lists: a heading, then a card in the second surface tone with a 1 px
+ * edge, its lines split by hairlines. The card lifts the rows off the
+ * room so a screen reads as layers, not one flat gray.
  */
 export function Section({
   theme,
@@ -21,15 +22,24 @@ export function Section({
   children?: React.ReactNode;
   first?: boolean;
 }) {
+  const rows = React.Children.toArray(children).filter(Boolean);
   return (
-    <View style={{ paddingTop: first ? 8 : 30 }}>
+    <View style={{ paddingTop: first ? space.s : space.xxl }}>
       {title ? (
-        <Text style={[styles.title, { color: theme.ink }]} accessibilityRole="header" maxFontSizeMultiplier={1.5}>
+        <Text style={[type.heading, styles.pad, { color: theme.ink }]} accessibilityRole="header" maxFontSizeMultiplier={1.5}>
           {title}
         </Text>
       ) : null}
-      {note ? <Text style={[styles.note, { color: theme.inkSoft }]}>{note}</Text> : null}
-      {children ? <View style={[styles.body, { borderTopColor: theme.rule }]}>{children}</View> : null}
+      {note ? <Text style={[type.small, styles.pad, styles.note, { color: theme.inkSoft }]}>{note}</Text> : null}
+      {rows.length > 0 ? (
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.edge }]}>
+          {rows.map((row, i) => (
+            <View key={i} style={i > 0 ? { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule } : undefined}>
+              {row}
+            </View>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -61,19 +71,18 @@ export function Line({
   const body = (
     <>
       <View style={styles.words}>
-        <Text style={[styles.label, { color: danger ? theme.danger : theme.ink }]}>{label}</Text>
-        {sub ? <Text style={[styles.sub, { color: theme.inkFaint }]}>{sub}</Text> : null}
+        <Text style={[type.body, { color: danger ? theme.danger : theme.ink }]}>{label}</Text>
+        {sub ? <Text style={[type.small, styles.sub, { color: theme.inkSoft }]}>{sub}</Text> : null}
       </View>
-      {value ? <Text style={[styles.value, { color: theme.inkSoft }]}>{value}</Text> : null}
+      {value ? <Text style={[type.body, styles.value, { color: theme.inkSoft }]}>{value}</Text> : null}
       {children}
       {(chevron ?? (onPress != null && !danger)) ? <Glyph name="chevron" size={18} color={theme.inkFaint} /> : null}
     </>
   );
-  const style = [styles.row, { borderBottomColor: theme.rule }];
   return onPress ? (
     <Press
       onPress={onPress}
-      style={style}
+      style={styles.row}
       pressedStyle={{ backgroundColor: theme.raised }}
       accessibilityRole="button"
       accessibilityLabel={a11y ?? [label, value, sub].filter(Boolean).join(', ')}
@@ -82,7 +91,7 @@ export function Line({
       {body}
     </Press>
   ) : (
-    <View style={style} accessible={!children} accessibilityLabel={a11y}>
+    <View style={styles.row} accessible={!children} accessibilityLabel={a11y}>
       {body}
     </View>
   );
@@ -110,28 +119,28 @@ export function PickLine({ theme, label, sub, on, onPress, radio = false }: { th
   return (
     <Press
       onPress={onPress}
-      style={[styles.row, { borderBottomColor: theme.rule }]}
+      style={styles.row}
       pressedStyle={{ backgroundColor: theme.raised }}
       accessibilityRole={radio ? 'radio' : 'checkbox'}
       accessibilityState={radio ? { selected: on } : { checked: on }}
       accessibilityLabel={sub ? `${label}. ${sub}` : label}
     >
       <View style={styles.words}>
-        <Text style={[styles.label, { color: theme.ink }]}>{label}</Text>
-        {sub ? <Text style={[styles.sub, { color: theme.inkFaint }]}>{sub}</Text> : null}
+        <Text style={[type.body, { color: theme.ink }]}>{label}</Text>
+        {sub ? <Text style={[type.small, styles.sub, { color: theme.inkSoft }]}>{sub}</Text> : null}
       </View>
-      <View style={{ width: 26, alignItems: 'center' }}>{on ? <Glyph name="check" size={24} color={theme.ink} weight={2.2} /> : null}</View>
+      <View style={styles.tick}>{on ? <Glyph name="check" size={24} color={theme.ink} weight={2.2} /> : null}</View>
     </Press>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { fontFamily: fonts.display, fontSize: 20, paddingHorizontal: 20, marginBottom: 2 },
-  note: { fontSize: 15, lineHeight: 21, paddingHorizontal: 20, marginTop: 2 },
-  body: { borderTopWidth: StyleSheet.hairlineWidth, marginTop: 10 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, paddingHorizontal: 20, borderBottomWidth: StyleSheet.hairlineWidth },
-  words: { flex: 1, paddingVertical: 12 },
-  label: { fontSize: 17 },
-  sub: { fontSize: 14, lineHeight: 19, marginTop: 2 },
-  value: { fontSize: 16, flexShrink: 1, textAlign: 'right' },
+  pad: { paddingHorizontal: space.l },
+  note: { marginTop: space.xs },
+  card: { marginHorizontal: space.l, marginTop: space.m, borderRadius: radius.large, borderWidth: 1, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.m, minHeight: 56, paddingHorizontal: space.l },
+  words: { flex: 1, paddingVertical: space.m },
+  sub: { marginTop: space.xs },
+  value: { flexShrink: 1, textAlign: 'right' },
+  tick: { width: space.xxl, alignItems: 'center' },
 });

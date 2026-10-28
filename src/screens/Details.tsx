@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme, fonts, radius, tabular, Theme } from '../theme';
+import { useTheme, radius, space, tabular, type, Theme } from '../theme';
 import { useApp } from '../state';
 import { addAttack, AttackFields, deleteAttack, DoseFields, getAttack, saveAttack } from '../db';
 import { atTime, dayKey, dayLabel, timeLabel, HOUR_MS } from '../days';
 import { durationMs, formatDuration } from '../insights';
-import { BACKFILL_HOURS } from '../rules';
+import { LENGTH_HOURS } from '../rules';
 import { CUSTOM_PREFIX, IMPACTS, medKindShort, noun, RELIEFS, SEVERITIES, SIDES, SYMPTOMS, TRIGGERS } from '../labels';
 import type { Impact, Relief, Severity, Side } from '../model';
 import { maybeRequestReview } from '../reviews';
@@ -20,6 +20,14 @@ type Draft = AttackFields & { doses: DoseDraft[] };
 
 let keySeq = 0;
 const newKey = () => `d${++keySeq}`;
+
+/** The length row: four large choices, Custom for the exact end time. */
+const LENGTHS: { id: string; label: string }[] = [
+  { id: '2', label: '2 h' },
+  { id: '4', label: '4 h' },
+  { id: '24', label: '1 day' },
+  { id: 'custom', label: 'Custom' },
+];
 
 const YES_NO: { id: 'yes' | 'no'; label: string }[] = [
   { id: 'yes', label: 'Yes' },
@@ -76,6 +84,8 @@ export default function DetailsScreen({ attackId, day, onClose }: { attackId: nu
   const [draft, setDraft] = useState<Draft | null>(isNew ? blankDraft(day, Date.now()) : null);
   // A new past attack needs a length (or "Still going") before it can be saved.
   const [lengthSet, setLengthSet] = useState(!isNew);
+  // "Custom" length: the exact end time picker shows. Also on for an attack whose length is not one of the chips.
+  const [custom, setCustom] = useState(false);
   const [medSheet, setMedSheet] = useState(false);
   const [customText, setCustomText] = useState('');
   const [now] = useState(Date.now());
@@ -92,6 +102,7 @@ export default function DetailsScreen({ attackId, day, onClose }: { attackId: nu
       const d: Draft = { ...a, doses: a.doses.map((x) => ({ ...x, key: newKey() })) };
       latest.current = d;
       setDraft(d);
+      if (a.endedAt != null && !LENGTH_HOURS.includes((a.endedAt - a.startedAt) / HOUR_MS)) setCustom(true);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attackId]);
@@ -187,9 +198,15 @@ export default function DetailsScreen({ attackId, day, onClose }: { attackId: nu
     const endedAt = draft.endedAt != null && draft.endedAt < startedAt ? startedAt : draft.endedAt;
     update({ startedAt, endedAt });
   };
-  const setLength = (h: number | 'going') => {
+  const setLength = (h: number | 'going' | 'custom') => {
     setLengthSet(true);
+    setCustom(h === 'custom');
     if (h === 'going') return update({ endedAt: null });
+    if (h === 'custom') {
+      // Keep the end already there; a new one starts two hours after the start.
+      if (draft.endedAt == null) update({ endedAt: Math.min(draft.startedAt + 2 * HOUR_MS, Date.now()) });
+      return;
+    }
     update({ endedAt: Math.min(draft.startedAt + h * HOUR_MS, Date.now()) });
   };
 
@@ -213,8 +230,10 @@ export default function DetailsScreen({ attackId, day, onClose }: { attackId: nu
   const open = draft.endedAt == null;
   const length = durationMs(draft, Date.now());
   const pickable = [...meds].sort((a, b) => Number(a.kind === 'preventive') - Number(b.kind === 'preventive'));
-  const input = [styles.input, { color: theme.ink, backgroundColor: theme.raised, borderColor: theme.rule }];
+  const input = [styles.input, { color: theme.ink, backgroundColor: theme.raised, borderColor: theme.edge }];
   const kb = theme.isDark ? ('dark' as const) : ('light' as const);
+  const lengthId = !lengthSet || open ? null : custom ? 'custom' : LENGTH_HOURS.includes(length / HOUR_MS) ? String(length / HOUR_MS) : 'custom';
+  const small = [type.small, { color: theme.inkFaint }];
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -224,119 +243,119 @@ export default function DetailsScreen({ attackId, day, onClose }: { attackId: nu
         back={{ label: isNew ? 'Cancel' : 'Done', onPress: close }}
         right={isNew ? <TextLink theme={theme} label="Save" onPress={saveNew} color={lengthSet ? theme.ink : theme.inkFaint} /> : undefined}
       />
-      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 40 }]} keyboardShouldPersistTaps="handled">
-        <Text style={[styles.lead, { color: theme.inkSoft }]}>
-          {isNew ? 'Everything here is optional except how long it lasted.' : `Saved as you go. Everything is optional; add what you remember.`}
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + space.xxl }]} keyboardShouldPersistTaps="handled">
+        <Text style={[type.small, { color: theme.inkSoft }]}>
+          {isNew ? 'Everything here is optional except how long it lasted.' : 'Saved as you go. Everything is optional; add what you remember.'}
         </Text>
 
-        <Block theme={theme} title="When">
+        <Group theme={theme} title="When">
           <When theme={theme} label="Started" value={draft.startedAt} max={Date.now()} onChange={setStart} />
           {!isNew && open ? (
             <View style={styles.going}>
-              <Text style={[styles.goingText, { color: theme.ink }, tabular]}>{`Still going, ${formatDuration(length)} so far`}</Text>
+              <Text style={[type.body, styles.grow, { color: theme.ink }, tabular]}>{`Still going, ${formatDuration(length)} so far`}</Text>
               <Button theme={theme} compact label="Over now" onPress={() => update({ endedAt: Date.now() })} />
             </View>
+          ) : (
+            <View>
+              <Label theme={theme}>{isNew && !lengthSet ? 'How long did it last?' : open ? 'How long: still going' : `How long: ${formatDuration(length)}`}</Label>
+              <Segment
+                theme={theme}
+                required
+                label="How long it lasted"
+                options={LENGTHS}
+                value={lengthId}
+                onChange={(v) => v && setLength(v === 'custom' ? 'custom' : Number(v))}
+              />
+              {isNew && Date.now() - draft.startedAt < 72 * HOUR_MS ? (
+                <View style={styles.going}>
+                  <Chip theme={theme} label="Still going" on={lengthSet && open} onPress={() => setLength('going')} />
+                </View>
+              ) : null}
+            </View>
+          )}
+          {!open && lengthId === 'custom' ? (
+            <When theme={theme} label="Ended" value={draft.endedAt ?? now} min={draft.startedAt} max={Date.now()} onChange={(ms) => update({ endedAt: Math.max(ms, draft.startedAt) })} />
           ) : null}
-          {!open ? <When theme={theme} label="Ended" value={draft.endedAt ?? now} min={draft.startedAt} max={Date.now()} onChange={(ms) => update({ endedAt: Math.max(ms, draft.startedAt) })} /> : null}
-          {isNew || !open ? (
-            <>
-              <Label theme={theme} style={{ marginTop: 8 }}>
-                {isNew && !lengthSet ? 'How long did it last?' : `Length: ${open ? 'still going' : formatDuration(length)}`}
-              </Label>
-              <Chips>
-                {BACKFILL_HOURS.map((h) => (
-                  <Chip
-                    key={h}
-                    theme={theme}
-                    label={h < 24 ? `${h} h` : `${h / 24} ${h === 24 ? 'day' : 'days'}`}
-                    on={lengthSet && !open && length === h * HOUR_MS}
-                    onPress={() => setLength(h)}
-                  />
-                ))}
-                {isNew && Date.now() - draft.startedAt < 72 * HOUR_MS ? <Chip theme={theme} label="Still going" on={lengthSet && open} onPress={() => setLength('going')} /> : null}
-              </Chips>
-            </>
-          ) : null}
-        </Block>
+        </Group>
 
-        <Block theme={theme} title="How bad">
+        <Group theme={theme} title="How bad">
           <Segment<Severity> theme={theme} label="Severity" options={SEVERITIES} value={draft.severity} onChange={(severity) => update({ severity })} />
-          <Label theme={theme} style={{ marginTop: 14 }}>
-            Pain, 0 to 10
-          </Label>
           <PainScale theme={theme} value={draft.pain} onChange={(pain) => update({ pain })} />
-          <Label theme={theme} style={{ marginTop: 14 }}>
-            Was it a migraine?
-          </Label>
-          <Segment
-            theme={theme}
-            label="Was it a migraine"
-            options={YES_NO}
-            value={draft.migraine == null ? null : draft.migraine ? 'yes' : 'no'}
-            onChange={(v) => update({ migraine: v == null ? null : v === 'yes' })}
-          />
-          <Text style={[styles.hint, { color: theme.inkFaint }]}>Left empty, moderate and severe ones count as migraine days.</Text>
-        </Block>
-
-        <Block theme={theme} title="Where">
-          <Chips>
-            {SIDES.map((s) => (
-              <Chip key={s.id} theme={theme} label={s.label} on={draft.locations.includes(s.id)} onPress={() => setSide(s.id)} />
-            ))}
-          </Chips>
-          <Label theme={theme} style={{ marginTop: 14 }}>
-            Aura
-          </Label>
-          <Segment
-            theme={theme}
-            label="Aura"
-            options={YES_NO}
-            value={draft.aura == null ? null : draft.aura ? 'yes' : 'no'}
-            onChange={(v) => update({ aura: v == null ? null : v === 'yes' })}
-          />
-        </Block>
-
-        <Block theme={theme} title="Symptoms">
-          <Chips>
-            {SYMPTOMS.map((s) => (
-              <Chip key={s.id} theme={theme} label={s.label} on={draft.symptoms.includes(s.id)} onPress={() => update({ symptoms: toggle(draft.symptoms, s.id) })} />
-            ))}
-          </Chips>
-        </Block>
-
-        <Block theme={theme} title="Triggers you noticed">
-          <Chips>
-            {TRIGGERS.map((t) => (
-              <Chip key={t.id} theme={theme} label={t.label} on={draft.triggers.includes(t.id)} onPress={() => update({ triggers: toggle(draft.triggers, t.id) })} />
-            ))}
-            {customs.map((t) => (
-              <Chip key={t} theme={theme} label={t.slice(CUSTOM_PREFIX.length)} on={draft.triggers.includes(t)} onPress={() => update({ triggers: toggle(draft.triggers, t) })} />
-            ))}
-          </Chips>
-          <View style={styles.customRow}>
-            <TextInput
-              value={customText}
-              onChangeText={setCustomText}
-              onSubmitEditing={addCustom}
-              placeholder="Your own trigger"
-              placeholderTextColor={theme.inkFaint}
-              style={[input, { flex: 1 }]}
-              keyboardAppearance={kb}
-              returnKeyType="done"
-              maxLength={40}
-              accessibilityLabel="Your own trigger"
+          <View>
+            <Label theme={theme}>Was it a migraine?</Label>
+            <Segment
+              theme={theme}
+              label="Was it a migraine"
+              options={YES_NO}
+              value={draft.migraine == null ? null : draft.migraine ? 'yes' : 'no'}
+              onChange={(v) => update({ migraine: v == null ? null : v === 'yes' })}
             />
-            <Button theme={theme} compact label="Add" onPress={addCustom} disabled={!customText.trim()} />
+            <Text style={[small, styles.hint]}>Left empty, moderate and severe ones count as migraine days.</Text>
           </View>
-        </Block>
+        </Group>
 
-        <Block theme={theme} title="Medication taken">
-          {draft.doses.map((d) => (
-            <Card key={d.key} theme={theme} style={[styles.dose, { backgroundColor: theme.bg }]}>
+        <Group theme={theme} title="What you noticed">
+          <View>
+            <Label theme={theme}>Where</Label>
+            <Chips>
+              {SIDES.map((x) => (
+                <Chip key={x.id} theme={theme} label={x.label} on={draft.locations.includes(x.id)} onPress={() => setSide(x.id)} />
+              ))}
+            </Chips>
+          </View>
+          <View>
+            <Label theme={theme}>Aura</Label>
+            <Segment
+              theme={theme}
+              label="Aura"
+              options={YES_NO}
+              value={draft.aura == null ? null : draft.aura ? 'yes' : 'no'}
+              onChange={(v) => update({ aura: v == null ? null : v === 'yes' })}
+            />
+          </View>
+          <View>
+            <Label theme={theme}>Symptoms</Label>
+            <Chips>
+              {SYMPTOMS.map((x) => (
+                <Chip key={x.id} theme={theme} label={x.label} on={draft.symptoms.includes(x.id)} onPress={() => update({ symptoms: toggle(draft.symptoms, x.id) })} />
+              ))}
+            </Chips>
+          </View>
+          <View>
+            <Label theme={theme}>Triggers</Label>
+            <Chips>
+              {TRIGGERS.map((t) => (
+                <Chip key={t.id} theme={theme} label={t.label} on={draft.triggers.includes(t.id)} onPress={() => update({ triggers: toggle(draft.triggers, t.id) })} />
+              ))}
+              {customs.map((t) => (
+                <Chip key={t} theme={theme} label={t.slice(CUSTOM_PREFIX.length)} on={draft.triggers.includes(t)} onPress={() => update({ triggers: toggle(draft.triggers, t) })} />
+              ))}
+            </Chips>
+            <View style={styles.customRow}>
+              <TextInput
+                value={customText}
+                onChangeText={setCustomText}
+                onSubmitEditing={addCustom}
+                placeholder="Your own trigger"
+                placeholderTextColor={theme.inkFaint}
+                style={[input, styles.grow]}
+                keyboardAppearance={kb}
+                returnKeyType="done"
+                maxLength={40}
+                accessibilityLabel="Your own trigger"
+              />
+              <Button theme={theme} compact label="Add" onPress={addCustom} disabled={!customText.trim()} />
+            </View>
+          </View>
+        </Group>
+
+        <Group theme={theme} title="Medication">
+          {draft.doses.map((d, i) => (
+            <View key={d.key} style={[styles.dose, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule, paddingTop: space.l }]}>
               <View style={styles.doseTop}>
-                <Text style={[styles.doseName, { color: theme.ink }]} numberOfLines={2}>
+                <Text style={[type.heading, styles.grow, { color: theme.ink }]} numberOfLines={2}>
                   {d.medName}
-                  <Text style={{ color: theme.inkFaint, fontFamily: undefined, fontSize: 15 }}>{`  ${medKindShort(d.medKind)}`}</Text>
+                  <Text style={[type.small, { color: theme.inkFaint }]}>{`  ${medKindShort(d.medKind)}`}</Text>
                 </Text>
                 <IconButton theme={theme} glyph="trash" label={`Remove ${d.medName}`} color={theme.inkSoft} onPress={() => removeDose(d.key)} />
               </View>
@@ -351,36 +370,35 @@ export default function DetailsScreen({ attackId, day, onClose }: { attackId: nu
                 maxLength={40}
                 accessibilityLabel={`Dose of ${d.medName}`}
               />
-              <Label theme={theme} style={{ marginTop: 6 }}>
-                Relief
-              </Label>
               <Segment<Relief> theme={theme} label="Relief" options={RELIEFS} value={d.relief} onChange={(relief) => setDose(d.key, { relief })} />
-            </Card>
+            </View>
           ))}
-          {pickable.length > 0 ? (
-            <>
-              <Text style={[styles.hint, { color: theme.inkFaint, marginTop: draft.doses.length > 0 ? 8 : 0 }]}>Tap one to add it.</Text>
-              <Chips>
-                {pickable.map((m) => (
-                  <Chip key={m.id} theme={theme} label={m.name} on={false} onPress={() => addDose(m.id)} hint={`Adds a dose of ${m.name}`} />
-                ))}
-              </Chips>
-            </>
-          ) : (
-            <Text style={[styles.hint, { color: theme.inkFaint }]}>Your list is empty. Add what you take once, then it is one tap here.</Text>
-          )}
-          <TextLink theme={theme} label="Add a medication to my list" onPress={() => setMedSheet(true)} />
-        </Block>
+          <View style={draft.doses.length > 0 ? { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule, paddingTop: space.l } : undefined}>
+            {pickable.length > 0 ? (
+              <>
+                <Label theme={theme}>{draft.doses.length > 0 ? 'Add another' : 'Tap one to add it'}</Label>
+                <Chips>
+                  {pickable.map((m) => (
+                    <Chip key={m.id} theme={theme} label={m.name} on={false} onPress={() => addDose(m.id)} hint={`Adds a dose of ${m.name}`} />
+                  ))}
+                </Chips>
+              </>
+            ) : (
+              <Text style={small}>Your list is empty. Add what you take once, then it is one tap here.</Text>
+            )}
+            <TextLink theme={theme} label="Add a medication to my list" color={theme.inkSoft} onPress={() => setMedSheet(true)} />
+          </View>
+        </Group>
 
-        <Block theme={theme} title="Did it stop you working or studying?">
-          <Segment<Impact> theme={theme} label="Did it stop you working or studying" options={IMPACTS} value={draft.impact} onChange={(impact) => update({ impact })} />
-        </Block>
-
-        <Block theme={theme} title="Note">
+        <Group theme={theme} title="Afterwards">
+          <View>
+            <Label theme={theme}>Did it stop you working or studying?</Label>
+            <Segment<Impact> theme={theme} label="Did it stop you working or studying" options={IMPACTS} value={draft.impact} onChange={(impact) => update({ impact })} />
+          </View>
           <TextInput
             value={draft.note}
             onChangeText={(note) => update({ note })}
-            placeholder="Anything else"
+            placeholder="A note, if you like"
             placeholderTextColor={theme.inkFaint}
             style={[input, styles.note]}
             keyboardAppearance={kb}
@@ -388,25 +406,20 @@ export default function DetailsScreen({ attackId, day, onClose }: { attackId: nu
             maxLength={2000}
             accessibilityLabel="Note"
           />
-        </Block>
+        </Group>
 
         {isNew ? (
-          <View style={{ marginTop: 10 }}>
+          <View style={styles.end}>
             <Button theme={theme} live label={lengthSet ? 'Save' : 'Choose how long it lasted'} onPress={saveNew} disabled={!lengthSet} />
           </View>
         ) : (
-          <View style={{ marginTop: 24, alignItems: 'center' }}>
-            <Text style={[styles.hint, { color: theme.inkFaint }]}>{`${dayLabel(dayKey(draft.startedAt))}, ${timeLabel(draft.startedAt)}`}</Text>
+          <View style={[styles.end, styles.centered]}>
+            <Text style={small}>{`${dayLabel(dayKey(draft.startedAt))}, ${timeLabel(draft.startedAt)}`}</Text>
             <TextLink theme={theme} label={`Delete this ${noun(track)}`} color={theme.danger} onPress={remove} />
           </View>
         )}
       </ScrollView>
-      <MedEditor
-        theme={theme}
-        med={medSheet ? 'new' : null}
-        onClose={() => setMedSheet(false)}
-        onSaved={setPendingMed}
-      />
+      <MedEditor theme={theme} med={medSheet ? 'new' : null} onClose={() => setMedSheet(false)} onSaved={setPendingMed} />
     </KeyboardAvoidingView>
   );
 }
@@ -416,31 +429,33 @@ function doseTime(d: Draft): number {
   return d.endedAt == null ? Date.now() : d.startedAt;
 }
 
-/** A titled block of the details screen. */
-function Block({ theme, title, children }: { theme: Theme; title: string; children: React.ReactNode }) {
+/** One of the five groups: a heading, then a card holding its controls with room between them. */
+function Group({ theme, title, children }: { theme: Theme; title: string; children: React.ReactNode }) {
   return (
-    <View style={[styles.block, { borderTopColor: theme.rule }]}>
-      <Text style={[styles.blockTitle, { color: theme.ink }]} accessibilityRole="header" maxFontSizeMultiplier={1.5}>
+    <View style={styles.group}>
+      <Text style={[type.heading, styles.groupTitle, { color: theme.ink }]} accessibilityRole="header" maxFontSizeMultiplier={1.5}>
         {title}
       </Text>
-      <View style={{ gap: 8 }}>{children}</View>
+      <Card theme={theme} style={styles.groupCard}>
+        {children}
+      </Card>
     </View>
   );
 }
 
-
 const styles = StyleSheet.create({
-  scroll: { paddingHorizontal: 20, paddingTop: 4 },
-  lead: { fontSize: 15, lineHeight: 21, marginBottom: 6 },
-  block: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, paddingBottom: 18 },
-  blockTitle: { fontFamily: fonts.display, fontSize: 19, marginBottom: 10 },
-  going: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, minHeight: 52 },
-  goingText: { fontSize: 16, flexShrink: 1 },
-  hint: { fontSize: 14, lineHeight: 19, marginTop: 4 },
-  input: { minHeight: 48, borderRadius: radius.card, borderWidth: StyleSheet.hairlineWidth, paddingHorizontal: 14, fontSize: 17 },
-  note: { minHeight: 110, paddingTop: 12, textAlignVertical: 'top' },
-  customRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 6 },
-  dose: { gap: 6, padding: 12 },
-  doseTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  doseName: { flex: 1, fontFamily: fonts.display, fontSize: 18 },
+  scroll: { paddingHorizontal: space.l, paddingTop: space.l },
+  grow: { flex: 1, minWidth: 0 },
+  centered: { alignItems: 'center' },
+  group: { marginTop: space.xxl },
+  groupTitle: { marginBottom: space.s },
+  groupCard: { gap: space.xl },
+  going: { flexDirection: 'row', alignItems: 'center', gap: space.m, marginTop: space.m },
+  hint: { marginTop: space.s },
+  input: { minHeight: 48, borderRadius: radius.small, borderWidth: 1, paddingHorizontal: space.m, fontSize: type.body.fontSize },
+  note: { minHeight: 112, paddingTop: space.m, textAlignVertical: 'top' },
+  customRow: { flexDirection: 'row', gap: space.s, alignItems: 'center', marginTop: space.m },
+  dose: { gap: space.m },
+  doseTop: { flexDirection: 'row', alignItems: 'center', gap: space.s },
+  end: { marginTop: space.xxl },
 });

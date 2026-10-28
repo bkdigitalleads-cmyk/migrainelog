@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Theme, fonts, radius } from '../theme';
+import { Theme, radius, space, type } from '../theme';
 import { addDays, daysInMonth, firstOfMonth, monthName, weekdayMon } from '../days';
 import { DayInfo } from '../insights';
 import { Press } from './Kit';
@@ -134,17 +134,19 @@ export function MonthKey({ theme }: { theme: Theme }) {
 
 const styles = StyleSheet.create({
   week: { flexDirection: 'row' },
-  weekday: { flex: 1, textAlign: 'center', fontSize: 13, paddingBottom: 6 },
+  weekday: { ...type.small, flex: 1, textAlign: 'center', paddingBottom: space.s },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
-  cell: { width: `${100 / 7}%`, aspectRatio: 1, padding: 2 },
-  inner: { flex: 1, borderRadius: radius.chip - 4, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
-  n: { fontFamily: fonts.number, fontSize: 17 },
-  marks: { flexDirection: 'row', gap: 3, height: 8, alignItems: 'center', marginTop: 1 },
-  ring: { width: 8, height: 8, borderRadius: 4, borderWidth: 1.5 },
-  dot: { width: 5, height: 5, borderRadius: 3 },
-  key: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, marginTop: 12 },
-  keyItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  keyText: { fontSize: 13 },
+  // Half a step on each side: 4 between neighbouring days.
+  cell: { width: `${100 / 7}%`, aspectRatio: 1, padding: space.xs / 2 },
+  inner: { flex: 1, borderRadius: radius.small, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  n: { ...type.body },
+  marks: { flexDirection: 'row', gap: space.xs, height: space.s, alignItems: 'center' },
+  ring: { width: space.s, height: space.s, borderRadius: radius.round, borderWidth: 1.5 },
+  // The marks are drawn sizes, not spacing.
+  dot: { width: 5, height: 5, borderRadius: radius.round },
+  key: { flexDirection: 'row', flexWrap: 'wrap', gap: space.l, marginTop: space.m },
+  keyItem: { flexDirection: 'row', alignItems: 'center', gap: space.s },
+  keyText: { ...type.small },
   keyShades: { flexDirection: 'row', gap: 2 },
-  keySwatch: { width: 12, height: 12, borderRadius: 3 },
+  keySwatch: { width: space.m, height: space.m, borderRadius: space.xs },
 });

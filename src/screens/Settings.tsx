@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import React, { useRef, useState } from 'react';
 import { Alert, Linking, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme, fonts, radius } from '../theme';
+import { useTheme, radius, space, type } from '../theme';
 import { useApp, EVENING_KEY } from '../state';
 import { deleteAllData, kvSet } from '../db';
 import { restorePurchases, isBillingAvailable } from '../purchases';
@@ -92,11 +92,11 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
           <Press
             onPress={() => showPaywall('pro')}
             accessibilityRole="button"
-            style={[styles.band, { backgroundColor: theme.surface, borderColor: theme.rule }]}
+            style={[styles.band, { backgroundColor: theme.surface, borderColor: theme.edge }]}
             pressedStyle={{ backgroundColor: theme.raised }}
           >
             <Text style={[styles.bandText, { color: theme.ink }]}>
-              <Text style={{ fontFamily: fonts.display }}>Migraine Log Pro </Text>
+              <Text style={type.heading}>Migraine Log Pro </Text>
               adds the monthly numbers, the doctor report to share and print, and your whole history.
             </Text>
             <Glyph name="chevron" size={20} color={theme.ink} />
@@ -152,7 +152,7 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
                 onSubmitEditing={addTrigger}
                 placeholder="Add a trigger"
                 placeholderTextColor={theme.inkFaint}
-                style={[styles.input, { color: theme.ink, backgroundColor: theme.raised, borderColor: theme.rule }]}
+                style={[styles.input, { color: theme.ink, backgroundColor: theme.raised, borderColor: theme.edge }]}
                 keyboardAppearance={theme.isDark ? 'dark' : 'light'}
                 returnKeyType="done"
                 maxLength={40}
@@ -205,10 +205,10 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  band: { marginTop: 10, marginHorizontal: 16, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: StyleSheet.hairlineWidth, borderRadius: radius.card },
-  bandText: { flex: 1, fontSize: 16, lineHeight: 22 },
-  triggers: { paddingHorizontal: 20, paddingVertical: 14, gap: 12 },
-  addRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  input: { flex: 1, minHeight: 48, borderRadius: radius.card, borderWidth: StyleSheet.hairlineWidth, paddingHorizontal: 14, fontSize: 17 },
-  version: { textAlign: 'center', marginTop: 32, fontSize: 13, paddingVertical: 8 },
+  band: { marginTop: space.s, marginHorizontal: space.l, padding: space.l, flexDirection: 'row', alignItems: 'center', gap: space.m, borderWidth: 1, borderRadius: radius.large },
+  bandText: { flex: 1, ...type.body },
+  triggers: { padding: space.l, gap: space.m },
+  addRow: { flexDirection: 'row', gap: space.s, alignItems: 'center' },
+  input: { flex: 1, minHeight: 48, borderRadius: radius.small, borderWidth: 1, paddingHorizontal: space.m, fontSize: type.body.fontSize },
+  version: { ...type.small, textAlign: 'center', marginTop: space.xxl, paddingVertical: space.s },
 });

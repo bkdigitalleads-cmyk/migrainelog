@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { Theme } from '../theme';
+import { Theme, space, type } from '../theme';
 
 /**
  * A date and a time, as the phone's own compact pickers (two small buttons
@@ -64,7 +64,7 @@ export default function When({
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, minHeight: 52, flexWrap: 'wrap' },
-  label: { fontSize: 16, flexShrink: 1 },
-  pickers: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.m, minHeight: 52, flexWrap: 'wrap' },
+  label: { ...type.body, flexShrink: 1 },
+  pickers: { flexDirection: 'row', alignItems: 'center', gap: space.s },
 });

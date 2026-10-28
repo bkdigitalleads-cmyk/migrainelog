@@ -101,7 +101,7 @@ On first launch: three short intro screens, a question about what the user mostl
 To test: tap Attack started, tap Moderate, tap Attack over, then Add details. Open Calendar and tap a day to mark it headache-free. Open Report and tap Preview the report.
 
 ## Screenshot plan (iPhone 6.9" and 6.5", 6 shots; Brian captures from a TestFlight build)
-1. One-tap attack button: Home with recent attacks and the big Attack started button: "Log an attack in two seconds"
+1. One-tap attack button: Home with the month summary and the big Attack started button in the middle: "Log an attack in two seconds"
 2. Calendar: October shaded by pain, headache-free rings, medication dots: "See your headache days at a glance"
 3. Monthly numbers: headache days, migraine days, 4-hour days and the triptan day count: "The numbers your doctor asks for"
 4. Doctor report: the report preview (Pro, no SAMPLE): "A one-page report for your doctor and insurer"

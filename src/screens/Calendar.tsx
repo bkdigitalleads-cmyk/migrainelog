@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme, fonts, tabular } from '../theme';
+import { useTheme, radius, space, tabular, type } from '../theme';
 import { useApp } from '../state';
 import { setFreeDay } from '../db';
 import { dayKey, dayLabel, firstOfMonth, lastOfMonth, monthLabel, parseDay, shiftMonth, timeLabel } from '../days';
@@ -50,7 +50,7 @@ export default function CalendarScreen({ onOpen, onAddOn }: { onOpen: (id: numbe
   return (
     <View style={{ flex: 1 }}>
       <ScreenTitle theme={theme} title="Calendar" />
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 24 }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: space.l, paddingBottom: insets.bottom + space.xxl }}>
         <View style={styles.monthRow}>
           <IconButton theme={theme} glyph="back" label="Earlier month" onPress={() => go(-1)} />
           <Text style={[styles.month, { color: theme.ink }]} accessibilityRole="header" maxFontSizeMultiplier={1.4}>
@@ -61,7 +61,9 @@ export default function CalendarScreen({ onOpen, onAddOn }: { onOpen: (id: numbe
 
         {visible ? (
           <>
-            <MonthGrid theme={theme} y={y} m={m} days={days} today={today} onPressDay={setPicked} />
+            <Card theme={theme} style={styles.gridCard}>
+              <MonthGrid theme={theme} y={y} m={m} days={days} today={today} onPressDay={setPicked} />
+            </Card>
             <MonthKey theme={theme} />
             <Text style={[styles.summary, { color: theme.inkSoft }, tabular]}>
               {`${counts.headache} ${counts.headache === 1 ? 'day' : 'days'} with a headache, ${counts.free} marked headache-free. Tap a day to change it.`}
@@ -102,7 +104,7 @@ export default function CalendarScreen({ onOpen, onAddOn }: { onOpen: (id: numbe
                   setPicked(null);
                   onOpen(a.id);
                 }}
-                style={[styles.attack, { borderColor: theme.rule, backgroundColor: theme.bg }]}
+                style={[styles.attack, { borderColor: theme.edge, backgroundColor: theme.raised }]}
                 pressedStyle={{ backgroundColor: theme.raised }}
                 accessibilityRole="button"
                 accessibilityLabel={`${timeLabel(a.startedAt)}, ${line}${sev ? `, ${sev}` : ''}. Opens the details`}
@@ -132,13 +134,14 @@ export default function CalendarScreen({ onOpen, onAddOn }: { onOpen: (id: numbe
 }
 
 const styles = StyleSheet.create({
-  monthRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
-  month: { fontFamily: fonts.display, fontSize: 20 },
-  summary: { fontSize: 15, lineHeight: 21, marginTop: 14 },
-  locked: { alignItems: 'center', gap: 10, paddingVertical: 22 },
-  lockedTitle: { fontFamily: fonts.display, fontSize: 20, textAlign: 'center' },
-  lockedLine: { fontSize: 16, lineHeight: 22, textAlign: 'center', marginBottom: 6 },
-  attack: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: StyleSheet.hairlineWidth, borderRadius: 14, padding: 14, minHeight: 64 },
-  attackTime: { fontSize: 17 },
-  attackLine: { fontSize: 15, marginTop: 2 },
+  monthRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: space.s },
+  month: { ...type.heading },
+  gridCard: { padding: space.s },
+  summary: { ...type.small, marginTop: space.l },
+  locked: { alignItems: 'center', gap: space.m, paddingVertical: space.xl },
+  lockedTitle: { ...type.heading, textAlign: 'center' },
+  lockedLine: { ...type.body, textAlign: 'center', marginBottom: space.s },
+  attack: { flexDirection: 'row', alignItems: 'center', gap: space.m, borderWidth: 1, borderRadius: radius.large, padding: space.l, minHeight: 64 },
+  attackTime: { ...type.body },
+  attackLine: { ...type.small, marginTop: space.xs },
 });

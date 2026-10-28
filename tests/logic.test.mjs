@@ -71,6 +71,17 @@ test('days: local keys, adding days and ranges never slip on the daylight saving
   assert.deepEqual(D.shiftMonth(2026, 12, 1), { y: 2027, m: 1 });
 });
 
+test('days: short "when" lines for the Home summary', () => {
+  assert.equal(D.hourLabel(at('2026-10-25', 15)), '3 pm');
+  assert.equal(D.hourLabel(at('2026-10-25', 9, 30)), '9:30 am');
+  assert.equal(D.hourLabel(at('2026-10-25', 0, 0)), '12 am');
+  assert.equal(D.whenShort(at('2026-10-27', 8), NOW), 'today, 8 am');
+  assert.equal(D.whenShort(at('2026-10-26', 21, 15), NOW), 'yesterday, 9:15 pm');
+  assert.equal(D.whenShort(at('2026-10-25', 15), NOW), 'Sun, 3 pm');
+  assert.equal(D.whenShort(at('2026-10-20', 15), NOW), 'Oct 20, 3 pm');
+  assert.equal(D.whenShort(at('2025-12-30', 15), NOW), 'Dec 30, 2025, 3 pm');
+});
+
 // ---------- duration ----------
 
 test('duration: closed attacks, open attacks run to now, never negative; the words for it', () => {

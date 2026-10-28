@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme, radius, Theme } from '../theme';
+import { useTheme, radius, space, type, Theme } from '../theme';
 import { useApp } from '../state';
 import { addMed, deleteMed, updateMed, MedFields } from '../db';
 import { atTime, dayKey, shortDate } from '../days';
@@ -154,7 +154,7 @@ export function MedEditor({
           onChangeText={(name) => set({ name })}
           placeholder="As it is on the box"
           placeholderTextColor={theme.inkFaint}
-          style={[styles.input, { color: theme.ink, backgroundColor: theme.raised, borderColor: theme.rule }]}
+          style={[styles.input, { color: theme.ink, backgroundColor: theme.raised, borderColor: theme.edge }]}
           keyboardAppearance={theme.isDark ? 'dark' : 'light'}
           autoCapitalize="words"
           autoCorrect={false}
@@ -173,7 +173,7 @@ export function MedEditor({
         {f.kind === 'simple' ? <Text style={[styles.sub, { color: theme.inkFaint }]}>Ibuprofen, acetaminophen, aspirin, naproxen.</Text> : null}
       </View>
       {prev ? (
-        <View style={{ gap: 4 }}>
+        <View style={styles.prev}>
           <SwitchLine
             theme={theme}
             label="I know when I started it"
@@ -187,7 +187,7 @@ export function MedEditor({
           {f.stoppedOn ? (
             <>
               <When theme={theme} label="Stopped" dateOnly value={atTime(f.stoppedOn, 12)} max={Date.now()} onChange={(ms) => set({ stoppedOn: dayKey(ms) })} />
-              <Label theme={theme} style={{ marginTop: 10 }}>
+              <Label theme={theme} style={styles.why}>
                 Why it stopped
               </Label>
               <Segment<StopReason> theme={theme} label="Why it stopped" options={STOP_REASONS} value={f.stopReason} onChange={(stopReason) => set({ stopReason })} />
@@ -200,10 +200,12 @@ export function MedEditor({
 }
 
 const styles = StyleSheet.create({
-  intro: { fontSize: 16, lineHeight: 22, paddingHorizontal: 20, marginTop: 2 },
-  add: { paddingHorizontal: 16, marginTop: 16 },
-  foot: { fontSize: 13, lineHeight: 18, paddingHorizontal: 20, marginTop: 28 },
-  input: { minHeight: 52, borderRadius: radius.card, borderWidth: StyleSheet.hairlineWidth, paddingHorizontal: 14, fontSize: 18 },
-  sub: { fontSize: 14, marginTop: 8 },
+  intro: { ...type.body, paddingHorizontal: space.l, marginTop: space.xs },
+  add: { paddingHorizontal: space.l, marginTop: space.l },
+  foot: { ...type.small, paddingHorizontal: space.l, marginTop: space.xxl },
+  input: { minHeight: 48, borderRadius: radius.small, borderWidth: 1, paddingHorizontal: space.m, fontSize: type.body.fontSize },
+  sub: { ...type.small, marginTop: space.s },
+  prev: { gap: space.s },
+  why: { marginTop: space.m },
 });
 

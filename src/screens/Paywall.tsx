@@ -2,14 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Linking, Modal, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
-import { useTheme, fonts, radius, tabular, Theme } from '../theme';
+import { useTheme, fonts, radius, space, tabular, type, Theme } from '../theme';
 import { useApp, PaywallReason } from '../state';
 import { getOffering, purchasePackage, restorePurchases, isBillingAvailable } from '../purchases';
 import { getTrialEligibleIds, trialLabel } from '../trial';
 import { cancelTrialReminder, scheduleTrialReminderIfTrial } from '../reminder';
 import { planOrder, preselect, PlanType } from '../offer';
 import { TERMS_URL } from '../links';
-import { ReportPage } from '../ui/Drawings';
 import Glyph from '../ui/Glyph';
 import { Button, IconButton, Press } from '../ui/Kit';
 import { MODAL_ANIMATION } from '../ui/motion';
@@ -174,15 +173,11 @@ export default function PaywallModal({ privacyUrl, onboarding = false }: { priva
             <IconButton theme={theme} glyph="close" label="Close" onPress={hidePaywall} disabled={!canClose} color={theme.inkSoft} />
           </View>
 
-          <View style={styles.hero}>
-            <ReportPage theme={theme} size={compact ? 150 : 190} compact />
-          </View>
-
-          <Text style={[styles.title, compact && styles.titleCompact, { color: theme.ink }]} accessibilityRole="header">
+          <Text style={[type.display, styles.title, compact && styles.titleCompact, { color: theme.ink }]} accessibilityRole="header">
             {headline}
           </Text>
-          <Text style={[styles.line, { color: theme.inkSoft }]}>{copy.line}</Text>
-          <Text style={[styles.what, { color: theme.inkSoft }]}>Logging is always free. Pro adds the numbers, the report to share and print, your whole history and the CSV.</Text>
+          <Text style={[type.body, styles.line, { color: theme.inkSoft }]}>{copy.line}</Text>
+          <Text style={[type.body, styles.line, { color: theme.inkSoft }]}>Logging is always free.</Text>
 
           {loading ? (
             <ActivityIndicator style={{ marginVertical: 24 }} color={theme.inkSoft} />
@@ -267,13 +262,11 @@ function Radio({ theme, on }: { theme: Theme; on: boolean }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { paddingBottom: 20 },
-  closeRow: { alignItems: 'flex-end', paddingHorizontal: 10, paddingTop: 2 },
-  hero: { alignItems: 'center' },
-  title: { fontFamily: fonts.display, fontSize: 28, lineHeight: 34, marginTop: 6, paddingHorizontal: 20 },
-  titleCompact: { fontSize: 24, lineHeight: 29, marginTop: 8 },
-  line: { fontSize: 17, lineHeight: 24, marginTop: 6, paddingHorizontal: 20 },
-  what: { fontSize: 14, lineHeight: 20, marginTop: 8, paddingHorizontal: 20 },
-  plans: { marginTop: 16, borderTopWidth: StyleSheet.hairlineWidth },
+  closeRow: { alignItems: 'flex-end', paddingHorizontal: space.s, paddingTop: space.xs },
+  title: { marginTop: space.xl, paddingHorizontal: space.l },
+  titleCompact: { marginTop: space.s },
+  line: { marginTop: space.s, paddingHorizontal: space.l },
+  plans: { marginTop: space.xxl, borderTopWidth: StyleSheet.hairlineWidth },
   plan: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 70, paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   planCompact: { minHeight: 60, paddingVertical: 8 },
   planTitle: { fontFamily: fonts.display, fontSize: 19 },

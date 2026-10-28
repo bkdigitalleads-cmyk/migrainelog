@@ -1,7 +1,7 @@
 import React from 'react';
 import { SectionList, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme, fonts, tabular } from '../theme';
+import { useTheme, radius, space, tabular, type } from '../theme';
 import { useApp } from '../state';
 import { dayKey, dayLabel, monthLabel, parseDay, timeLabel } from '../days';
 import { durationMs, formatDuration, severityOf } from '../insights';
@@ -38,43 +38,58 @@ export default function HistoryScreen({ onBack, onOpen, onAddPast }: { onBack: (
       <SectionList
         sections={sections}
         keyExtractor={(a) => String(a.id)}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + space.xxl }}
         ListHeaderComponent={
           <View style={styles.top}>
             <Button theme={theme} glyph="plus" label={`Add a past ${noun(track)}`} onPress={onAddPast} />
           </View>
         }
-        ListEmptyComponent={<Text style={[styles.empty, { color: theme.inkSoft }]}>{`Nothing logged yet. ${plural(track, 2)[0].toUpperCase()}${plural(track, 2).slice(1)} you log show up here.`}</Text>}
+        ListEmptyComponent={<Text style={[type.body, styles.empty, { color: theme.inkSoft }]}>{`Nothing logged yet. ${plural(track, 2)[0].toUpperCase()}${plural(track, 2).slice(1)} you log show up here.`}</Text>}
         renderSectionHeader={({ section }) => (
-          <Text style={[styles.section, { color: theme.inkSoft, backgroundColor: theme.bg, borderBottomColor: theme.rule }]} accessibilityRole="header">
+          <Text style={[type.heading, styles.section, { color: theme.ink, backgroundColor: theme.bg }]} accessibilityRole="header">
             {section.title}
           </Text>
         )}
-        renderItem={({ item: a }) => {
+        renderItem={({ item: a, index, section }) => {
           const sev = severityLabel(severityOf(a));
           const len = a.endedAt == null ? `Still going, ${formatDuration(durationMs(a, now))}` : formatDuration(durationMs(a, now));
           const meds = a.doses.length > 0 ? `, ${a.doses.length} ${a.doses.length === 1 ? 'dose' : 'doses'}` : '';
+          const first = index === 0;
+          const lastRow = index === section.data.length - 1;
+          const needs = a.detailsAt == null && a.endedAt != null;
           return (
             <Press
               onPress={() => onOpen(a.id)}
-              style={[styles.row, { borderBottomColor: theme.rule }]}
+              style={[
+                styles.row,
+                { backgroundColor: theme.surface, borderColor: theme.edge },
+                first && styles.rowFirst,
+                lastRow && styles.rowLast,
+                !first && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule },
+              ]}
               pressedStyle={{ backgroundColor: theme.raised }}
               accessibilityRole="button"
-              accessibilityLabel={`${dayLabel(dayKey(a.startedAt))}, ${timeLabel(a.startedAt)}, ${len}${sev ? `, ${sev}` : ''}${meds}`}
+              accessibilityLabel={`${dayLabel(dayKey(a.startedAt))}, ${timeLabel(a.startedAt)}, ${len}${sev ? `, ${sev}` : ''}${meds}${needs ? '. Add details' : ''}`}
             >
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.day, { color: theme.ink }]}>{`${dayLabel(dayKey(a.startedAt))}, ${timeLabel(a.startedAt)}`}</Text>
-                <Text style={[styles.line, { color: theme.inkSoft }, tabular]}>{`${len}${sev ? `, ${sev.toLowerCase()}` : ''}${meds}${a.backfilled ? ', added later' : ''}`}</Text>
+              <View style={styles.grow}>
+                <Text style={[type.body, { color: theme.ink }]}>{`${dayLabel(dayKey(a.startedAt))}, ${timeLabel(a.startedAt)}`}</Text>
+                <Text style={[type.small, { color: theme.inkSoft }, tabular]}>{`${len}${sev ? `, ${sev.toLowerCase()}` : ''}${meds}${a.backfilled ? ', added later' : ''}`}</Text>
               </View>
-              <Glyph name="chevron" size={18} color={theme.inkFaint} />
+              {needs ? (
+                <View style={[styles.pill, { borderColor: theme.edge, backgroundColor: theme.raised }]}>
+                  <Text style={[type.small, { color: theme.ink }]}>Add details</Text>
+                </View>
+              ) : (
+                <Glyph name="chevron" size={18} color={theme.inkFaint} />
+              )}
             </Press>
           );
         }}
         ListFooterComponent={
           hidden > 0 ? (
             <Card theme={theme} style={styles.more}>
-              <Text style={[styles.moreText, { color: theme.ink }]}>{`${hidden} older ${plural(track, hidden)} are kept on this iPhone.`}</Text>
-              <Text style={[styles.moreSub, { color: theme.inkSoft }]}>Free shows the last 30 days. Pro shows your whole history.</Text>
+              <Text style={[type.heading, { color: theme.ink }]}>{`${hidden} older ${plural(track, hidden)} are kept on this iPhone.`}</Text>
+              <Text style={[type.small, { color: theme.inkSoft }]}>Free shows the last 30 days. Pro shows your whole history.</Text>
               <Button theme={theme} live label="See my whole history" onPress={() => showPaywall('history')} />
             </Card>
           ) : null
@@ -86,13 +101,13 @@ export default function HistoryScreen({ onBack, onOpen, onAddPast }: { onBack: (
 }
 
 const styles = StyleSheet.create({
-  top: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 10 },
-  empty: { fontSize: 17, lineHeight: 24, paddingHorizontal: 20, paddingTop: 20 },
-  section: { fontFamily: fonts.display, fontSize: 15, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 6, borderBottomWidth: StyleSheet.hairlineWidth },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64, paddingHorizontal: 20, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
-  day: { fontSize: 17 },
-  line: { fontSize: 15, marginTop: 2 },
-  more: { margin: 16, gap: 8 },
-  moreText: { fontFamily: fonts.display, fontSize: 18 },
-  moreSub: { fontSize: 15, lineHeight: 21, marginBottom: 6 },
+  top: { paddingHorizontal: space.l, paddingTop: space.l },
+  empty: { paddingHorizontal: space.l, paddingTop: space.xl },
+  section: { paddingHorizontal: space.l, paddingTop: space.xl, paddingBottom: space.s },
+  grow: { flex: 1, gap: space.xs },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.m, minHeight: 64, marginHorizontal: space.l, paddingHorizontal: space.l, paddingVertical: space.m, borderLeftWidth: 1, borderRightWidth: 1 },
+  rowFirst: { borderTopWidth: 1, borderTopLeftRadius: radius.large, borderTopRightRadius: radius.large },
+  rowLast: { borderBottomWidth: 1, borderBottomLeftRadius: radius.large, borderBottomRightRadius: radius.large },
+  pill: { borderWidth: 1, borderRadius: radius.small, paddingHorizontal: space.m, minHeight: 36, justifyContent: 'center' },
+  more: { margin: space.l, marginTop: space.xl, gap: space.m },
 });

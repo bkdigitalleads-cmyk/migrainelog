@@ -1,23 +1,29 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { AccessibilityActionEvent, PanResponder, StyleSheet, Text, View } from 'react-native';
-import { Theme, fonts, radius } from '../theme';
+import { Theme, radius, space, type } from '../theme';
 import { tick } from './motion';
+import { TextLink } from './Kit';
+
+const THUMB = 28;
 
 /**
- * Pain from 0 to 10: a slider made of eleven cells. Tap a number, or drag
- * across; VoiceOver swipes up and down to change it. Tapping the chosen
- * number again clears it (pain not given).
+ * Pain from 0 to 10: one slider, with the value large above it ("6",
+ * "of 10" small) and "No pain" and "Worst" at the ends. Touch anywhere on
+ * the track or drag; it settles on whole numbers with a tick each. VoiceOver
+ * swipes up and down to change it. "Clear" puts it back to not given.
  */
 export default function PainScale({ theme, value, onChange }: { theme: Theme; value: number | null; onChange: (v: number | null) => void }) {
-  const width = useRef(0);
+  const [width, setWidth] = useState(0);
+  const widthRef = useRef(0);
   const last = useRef<number | null>(value);
   last.current = value;
   const change = useRef(onChange);
   change.current = onChange;
-  const startedOn = useRef<number | null>(null);
-  const moved = useRef(false);
 
-  const at = (x: number) => Math.max(0, Math.min(10, Math.floor((x / Math.max(1, width.current)) * 11)));
+  const at = (x: number) => {
+    const usable = Math.max(1, widthRef.current - THUMB);
+    return Math.max(0, Math.min(10, Math.round(((x - THUMB / 2) / usable) * 10)));
+  };
   const set = (v: number | null) => {
     if (v !== last.current) {
       tick();
@@ -30,20 +36,10 @@ export default function PainScale({ theme, value, onChange }: { theme: Theme; va
   const pan = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 4,
+      onMoveShouldSetPanResponder: () => true,
       onPanResponderTerminationRequest: () => false,
-      onPanResponderGrant: (e) => {
-        moved.current = false;
-        startedOn.current = at(e.nativeEvent.locationX);
-      },
-      onPanResponderMove: (e, g) => {
-        if (Math.abs(g.dx) > 4) moved.current = true;
-        if (moved.current) set(at(e.nativeEvent.locationX));
-      },
-      onPanResponderRelease: (e) => {
-        const v = at(e.nativeEvent.locationX);
-        if (!moved.current) set(v === last.current && startedOn.current === v ? null : v);
-      },
+      onPanResponderGrant: (e) => set(at(e.nativeEvent.locationX)),
+      onPanResponderMove: (e) => set(at(e.nativeEvent.locationX)),
     })
   ).current;
 
@@ -53,51 +49,50 @@ export default function PainScale({ theme, value, onChange }: { theme: Theme; va
     if (e.nativeEvent.actionName === 'decrement') set(v <= 0 ? null : v - 1);
   };
 
+  const left = value == null ? 0 : (value / 10) * Math.max(0, width - THUMB);
+
   return (
-    <View
-      accessible
-      accessibilityRole="adjustable"
-      accessibilityLabel="Pain, 0 to 10"
-      accessibilityValue={value == null ? { text: 'Not given' } : { min: 0, max: 10, now: value, text: `${value} out of 10` }}
-      accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
-      onAccessibilityAction={onAction}
-    >
-      <View style={styles.row} onLayout={(e) => (width.current = e.nativeEvent.layout.width)} {...pan.panHandlers}>
-        {Array.from({ length: 11 }, (_, i) => {
-          const filled = value != null && i <= value;
-          const chosen = value === i;
-          return (
-            <View
-              key={i}
-              pointerEvents="none"
-              style={[
-                styles.cell,
-                { backgroundColor: filled ? theme.picked : theme.surface, borderColor: chosen ? theme.pickedEdge : theme.rule },
-                chosen && styles.chosen,
-              ]}
-            >
-              <Text style={[styles.n, { color: filled ? theme.ink : theme.inkFaint }]} maxFontSizeMultiplier={1.2}>
-                {i}
-              </Text>
-            </View>
-          );
-        })}
+    <View>
+      <View style={styles.readout} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+        <Text style={[type.display, { color: value == null ? theme.inkFaint : theme.ink }]} maxFontSizeMultiplier={1.3}>
+          {value == null ? '\u2013' : value}
+        </Text>
+        <Text style={[type.small, { color: theme.inkSoft }]}>{value == null ? 'Pain not given. Touch the line to set it.' : 'of 10'}</Text>
+        <View style={{ flex: 1 }} />
+        {value != null ? <TextLink theme={theme} label="Clear" color={theme.inkSoft} onPress={() => set(null)} /> : null}
+      </View>
+      <View
+        accessible
+        accessibilityRole="adjustable"
+        accessibilityLabel="Pain, 0 to 10"
+        accessibilityValue={value == null ? { text: 'Not given' } : { min: 0, max: 10, now: value, text: `${value} out of 10` }}
+        accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+        onAccessibilityAction={onAction}
+        style={styles.hit}
+        onLayout={(e) => {
+          widthRef.current = e.nativeEvent.layout.width;
+          setWidth(e.nativeEvent.layout.width);
+        }}
+        {...pan.panHandlers}
+      >
+        <View pointerEvents="none" style={[styles.track, { backgroundColor: theme.raised, borderColor: theme.edge }]}>
+          {value != null ? <View style={[styles.fill, { width: left, backgroundColor: theme.pickedEdge }]} /> : null}
+        </View>
+        {value != null ? <View pointerEvents="none" style={[styles.thumb, { left, backgroundColor: theme.ink, borderColor: theme.bg }]} /> : null}
       </View>
       <View style={styles.ends} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-        <Text style={[styles.end, { color: theme.inkFaint }]}>No pain</Text>
-        <Text style={[styles.value, { color: theme.ink }]}>{value == null ? ' ' : `${value} of 10`}</Text>
-        <Text style={[styles.end, { color: theme.inkFaint }]}>Worst</Text>
+        <Text style={[type.small, { color: theme.inkSoft }]}>No pain</Text>
+        <Text style={[type.small, { color: theme.inkSoft }]}>Worst</Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 3 },
-  cell: { flex: 1, height: 54, borderRadius: radius.chip / 2, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
-  chosen: { borderWidth: 2 },
-  n: { fontFamily: fonts.number, fontSize: 17 },
-  ends: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 },
-  end: { fontSize: 13 },
-  value: { fontFamily: fonts.display, fontSize: 15 },
+  readout: { flexDirection: 'row', alignItems: 'baseline', gap: space.s, minHeight: 44 },
+  hit: { height: 48, justifyContent: 'center', marginTop: space.s },
+  track: { height: space.s, borderRadius: radius.round, borderWidth: 1, overflow: 'hidden', marginHorizontal: THUMB / 2 },
+  fill: { position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: radius.round },
+  thumb: { position: 'absolute', width: THUMB, height: THUMB, borderRadius: radius.round, borderWidth: 2 },
+  ends: { flexDirection: 'row', justifyContent: 'space-between', marginTop: space.xs },
 });

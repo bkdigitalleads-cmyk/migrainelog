@@ -1,7 +1,7 @@
 import React from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Theme, fonts, radius } from '../theme';
+import { Theme, radius, space, type } from '../theme';
 import { IconButton } from './Kit';
 import { MODAL_ANIMATION } from './motion';
 
@@ -30,9 +30,9 @@ export function Sheet({
     <Modal visible={visible} transparent animationType={MODAL_ANIMATION} onRequestClose={onClose} statusBarTranslucent>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.fill}>
         <Pressable style={[styles.fill, { backgroundColor: theme.scrim }]} onPress={onClose} accessibilityLabel="Close" accessibilityRole="button" />
-        <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.rule, paddingBottom: Math.max(insets.bottom, 16) }]} accessibilityViewIsModal>
+        <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.edge, paddingBottom: Math.max(insets.bottom, space.l) }]} accessibilityViewIsModal>
           <View style={styles.top}>
-            <Text style={[styles.title, { color: theme.ink }]} accessibilityRole="header" maxFontSizeMultiplier={1.4}>
+            <Text style={[type.heading, styles.title, { color: theme.ink }]} accessibilityRole="header" maxFontSizeMultiplier={1.4}>
               {title}
             </Text>
             <IconButton theme={theme} glyph="close" label="Close" onPress={onClose} color={theme.inkSoft} />
@@ -49,9 +49,9 @@ export function Sheet({
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  panel: { maxHeight: '88%', borderTopLeftRadius: radius.big, borderTopRightRadius: radius.big, borderWidth: StyleSheet.hairlineWidth, borderBottomWidth: 0 },
-  top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 20, paddingRight: 8, paddingTop: 10, minHeight: 56 },
-  title: { fontFamily: fonts.display, fontSize: 21, flexShrink: 1 },
-  body: { paddingHorizontal: 20, paddingBottom: 12, gap: 14 },
-  footer: { paddingHorizontal: 16, paddingTop: 8, gap: 8 },
+  panel: { maxHeight: '88%', borderTopLeftRadius: radius.large, borderTopRightRadius: radius.large, borderWidth: 1, borderBottomWidth: 0 },
+  top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: space.l, paddingRight: space.s, paddingTop: space.s, minHeight: 56 },
+  title: { flexShrink: 1 },
+  body: { paddingHorizontal: space.l, paddingBottom: space.m, gap: space.l },
+  footer: { paddingHorizontal: space.l, paddingTop: space.s, gap: space.s },
 });

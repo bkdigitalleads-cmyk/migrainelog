@@ -47,5 +47,5 @@ export function quickActionFor(track: Track, attackOpen: boolean): { id: 'start'
   return attackOpen ? { id: 'end', title: overLabel(track) } : { id: 'start', title: startLabel(track) };
 }
 
-/** Lengths offered when an attack is entered from memory, in hours. */
-export const BACKFILL_HOURS = [1, 2, 4, 8, 12, 24, 48, 72];
+/** The quick lengths on the details screen, in hours: short, the 4 hours that counts as long, all day. Anything else is Custom. */
+export const LENGTH_HOURS = [2, 4, 24];

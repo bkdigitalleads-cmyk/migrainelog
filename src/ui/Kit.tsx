@@ -2,10 +2,15 @@
  * The component kit. Everything tappable goes through Press, so everything
  * shows it was pressed; targets are at least 44 points, and the two main
  * buttons fill the width and stand at least 96 points tall.
+ *
+ * Built on the theme's three type sizes (display, body, small), its
+ * spacing scale and its two corners: large for cards and the main
+ * buttons, small for chips, segments, inputs and plain buttons. Surfaces
+ * that sit on the room get the second tone and a 1 px edge.
  */
 import React from 'react';
 import { Pressable, PressableProps, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
-import { BIG_BUTTON, Theme, fonts, radius, tabular } from '../theme';
+import { BIG_BUTTON, Theme, radius, space, tabular, type } from '../theme';
 import Glyph, { GlyphName } from './Glyph';
 import { tick } from './motion';
 
@@ -24,7 +29,7 @@ export function Press({
 
 /**
  * One of the two main buttons. `live` is the warm accent: the one thing to
- * do now. `quiet` is the same size in the room's own colors.
+ * do now. `quiet` is the same size in the second surface tone.
  */
 export function BigAction({
   theme,
@@ -57,15 +62,15 @@ export function BigAction({
       accessibilityState={{ disabled }}
       style={[
         styles.big,
-        { minHeight: height, backgroundColor: live ? theme.live : theme.surface, borderColor: live ? theme.live : theme.rule, opacity: disabled ? 0.45 : 1 },
+        { minHeight: height, backgroundColor: live ? theme.live : theme.surface, borderColor: live ? theme.live : theme.edge, opacity: disabled ? 0.45 : 1 },
       ]}
       pressedStyle={{ opacity: 0.82, transform: [{ scale: 0.99 }] }}
     >
-      <Text style={[styles.bigLabel, { color: fg }]} maxFontSizeMultiplier={1.4} numberOfLines={2}>
+      <Text style={[type.display, styles.center, { color: fg }]} maxFontSizeMultiplier={1.4} numberOfLines={2}>
         {label}
       </Text>
       {sub ? (
-        <Text style={[styles.bigSub, { color: fg }, tabular]} maxFontSizeMultiplier={1.4} numberOfLines={2}>
+        <Text style={[type.small, styles.center, { color: fg, marginTop: space.xs }, tabular]} maxFontSizeMultiplier={1.4} numberOfLines={2}>
           {sub}
         </Text>
       ) : null}
@@ -73,7 +78,7 @@ export function BigAction({
   );
 }
 
-/** A plain button: the room's surface with a hairline. `live` lays it in the accent (Continue). */
+/** A plain button in the second tone with a 1 px edge. `live` lays it in the accent (Continue, Save). */
 export function Button({
   theme,
   label,
@@ -105,12 +110,12 @@ export function Button({
       style={[
         styles.button,
         compact && styles.buttonCompact,
-        { backgroundColor: live ? theme.live : theme.surface, borderColor: live ? theme.live : theme.rule, opacity: disabled ? 0.45 : 1 },
+        { backgroundColor: live ? theme.live : theme.surface, borderColor: live ? theme.live : theme.edge, opacity: disabled ? 0.45 : 1 },
       ]}
       pressedStyle={{ opacity: 0.75 }}
     >
       {glyph && <Glyph name={glyph} size={22} color={fg} />}
-      <Text style={[styles.buttonLabel, { color: fg }]} maxFontSizeMultiplier={1.5} numberOfLines={2}>
+      <Text style={[type.heading, styles.center, { color: fg }]} maxFontSizeMultiplier={1.5} numberOfLines={2}>
         {label}
       </Text>
     </Press>
@@ -155,12 +160,12 @@ export function IconButton({
 export function TextLink({ theme, label, onPress, color, hint }: { theme: Theme; label: string; onPress: () => void; color?: string; hint?: string }) {
   return (
     <Press onPress={onPress} hitSlop={8} accessibilityRole="button" accessibilityLabel={label} accessibilityHint={hint} style={styles.link}>
-      <Text style={[styles.linkLabel, { color: color ?? theme.ink }]}>{label}</Text>
+      <Text style={[type.body, styles.underline, { color: color ?? theme.ink }]}>{label}</Text>
     </Press>
   );
 }
 
-/** The strip at the top of a screen: back on the left, a title, actions on the right. */
+/** The strip at the top of a pushed screen: back on the left, a title, actions on the right. */
 export function Header({
   theme,
   title,
@@ -173,19 +178,19 @@ export function Header({
   right?: React.ReactNode;
 }) {
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { borderBottomColor: theme.edge }]}>
       <View style={styles.headerSide}>
         {back && (
           <Press onPress={back.onPress} hitSlop={10} accessibilityRole="button" accessibilityLabel={back.label} style={styles.back}>
             <Glyph name="back" size={24} color={theme.ink} />
-            <Text style={[styles.backLabel, { color: theme.ink }]} maxFontSizeMultiplier={1.3} numberOfLines={1}>
+            <Text style={[type.body, { color: theme.ink }]} maxFontSizeMultiplier={1.3} numberOfLines={1}>
               {back.label}
             </Text>
           </Press>
         )}
       </View>
       {title ? (
-        <Text style={[styles.headerTitle, { color: theme.ink }]} numberOfLines={1} accessibilityRole="header" maxFontSizeMultiplier={1.3}>
+        <Text style={[type.heading, styles.headerTitle, { color: theme.ink }]} numberOfLines={1} accessibilityRole="header" maxFontSizeMultiplier={1.3}>
           {title}
         </Text>
       ) : (
@@ -196,11 +201,11 @@ export function Header({
   );
 }
 
-/** A screen's own title, large, on the left. */
+/** A tab's own title, large, on the left. */
 export function ScreenTitle({ theme, title, right }: { theme: Theme; title: string; right?: React.ReactNode }) {
   return (
     <View style={styles.screenTitleRow}>
-      <Text style={[styles.screenTitle, { color: theme.ink }]} accessibilityRole="header" maxFontSizeMultiplier={1.4}>
+      <Text style={[type.display, styles.shrink, { color: theme.ink }]} accessibilityRole="header" maxFontSizeMultiplier={1.4}>
         {title}
       </Text>
       {right}
@@ -220,11 +225,11 @@ export function Chip({ theme, label, on, onPress, hint }: { theme: Theme; label:
       accessibilityState={{ checked: on }}
       accessibilityLabel={label}
       accessibilityHint={hint}
-      style={[styles.chip, { backgroundColor: on ? theme.picked : theme.raised, borderColor: on ? theme.pickedEdge : 'transparent' }]}
+      style={[styles.chip, { backgroundColor: on ? theme.picked : theme.raised, borderColor: on ? theme.pickedEdge : theme.edge }]}
       pressedStyle={{ opacity: 0.7 }}
     >
       {on && <Glyph name="check" size={16} color={theme.ink} weight={2.2} />}
-      <Text style={[styles.chipLabel, { color: on ? theme.ink : theme.inkSoft }]} maxFontSizeMultiplier={1.6}>
+      <Text style={[type.body, { color: on ? theme.ink : theme.inkSoft }]} maxFontSizeMultiplier={1.6}>
         {label}
       </Text>
     </Press>
@@ -238,7 +243,7 @@ export function Chips({ children }: { children: React.ReactNode }) {
 
 /**
  * One of a few, as big side-by-side targets (Mild, Moderate, Severe; Yes,
- * Partly, No). Tapping the chosen one again clears it.
+ * Partly, No). Tapping the chosen one again clears it, unless `required`.
  */
 export function Segment<T extends string>({
   theme,
@@ -247,6 +252,7 @@ export function Segment<T extends string>({
   onChange,
   tall = false,
   label,
+  required = false,
 }: {
   theme: Theme;
   options: { id: T; label: string }[];
@@ -254,6 +260,7 @@ export function Segment<T extends string>({
   onChange: (v: T | null) => void;
   tall?: boolean;
   label: string;
+  required?: boolean;
 }) {
   return (
     <View style={styles.segment} accessibilityRole="radiogroup" accessibilityLabel={label}>
@@ -264,20 +271,20 @@ export function Segment<T extends string>({
             key={o.id}
             onPress={() => {
               tick();
-              onChange(on ? null : o.id);
+              onChange(on && !required ? null : o.id);
             }}
             accessibilityRole="radio"
             accessibilityState={{ selected: on }}
             accessibilityLabel={o.label}
-            accessibilityHint={on ? 'Tap again to clear' : undefined}
+            accessibilityHint={on && !required ? 'Tap again to clear' : undefined}
             style={[
               styles.segmentItem,
               tall && styles.segmentTall,
-              { backgroundColor: on ? theme.picked : theme.surface, borderColor: on ? theme.pickedEdge : theme.rule },
+              { backgroundColor: on ? theme.picked : theme.surface, borderColor: on ? theme.pickedEdge : theme.edge },
             ]}
             pressedStyle={{ opacity: 0.7 }}
           >
-            <Text style={[styles.segmentLabel, tall && styles.segmentLabelTall, { color: on ? theme.ink : theme.inkSoft }]} maxFontSizeMultiplier={1.4} numberOfLines={2}>
+            <Text style={[type.heading, styles.center, { color: on ? theme.ink : theme.inkSoft }]} maxFontSizeMultiplier={1.4} numberOfLines={2}>
               {o.label}
             </Text>
           </Press>
@@ -287,14 +294,15 @@ export function Segment<T extends string>({
   );
 }
 
+/** The second surface tone with a 1 px edge and the large corner. */
 export function Card({ theme, children, style }: { theme: Theme; children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
-  return <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.rule }, style]}>{children}</View>;
+  return <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.edge }, style]}>{children}</View>;
 }
 
-/** A small heading inside a screen. */
+/** A small label above a control or a group. */
 export function Label({ theme, children, style }: { theme: Theme; children: React.ReactNode; style?: StyleProp<TextStyle> }) {
   return (
-    <Text style={[styles.label, { color: theme.inkSoft }, style]} accessibilityRole="header" maxFontSizeMultiplier={1.6}>
+    <Text style={[type.small, styles.label, { color: theme.inkSoft }, style]} accessibilityRole="header" maxFontSizeMultiplier={1.6}>
       {children}
     </Text>
   );
@@ -303,18 +311,13 @@ export function Label({ theme, children, style }: { theme: Theme; children: Reac
 /** A big number with what it counts. */
 export function Numeral({ theme, value, label, sub }: { theme: Theme; value: string; label: string; sub?: string }) {
   return (
-    <View style={styles.numeral} accessible accessibilityLabel={`${label}: ${value}${sub ? `. ${sub}` : ''}`}>
-      <Text style={[styles.numeralValue, value.length > 5 && styles.numeralLong, { color: theme.ink }]} maxFontSizeMultiplier={1.3} numberOfLines={1} adjustsFontSizeToFit>
+    <View style={[styles.numeral, { backgroundColor: theme.surface, borderColor: theme.edge }]} accessible accessibilityLabel={`${label}: ${value}${sub ? `. ${sub}` : ''}`}>
+      <Text style={[type.display, { color: theme.ink }]} maxFontSizeMultiplier={1.3} numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </Text>
-      <Text style={[styles.numeralLabel, { color: theme.inkSoft }]} maxFontSizeMultiplier={1.5}>
-        {label}
+      <Text style={[type.small, { color: theme.inkSoft, marginTop: space.xs }]} maxFontSizeMultiplier={1.5}>
+        {sub ? `${label} ${sub}` : label}
       </Text>
-      {sub ? (
-        <Text style={[styles.numeralSub, { color: theme.inkFaint }]} maxFontSizeMultiplier={1.5}>
-          {sub}
-        </Text>
-      ) : null}
     </View>
   );
 }
@@ -323,7 +326,7 @@ export function Numeral({ theme, value, label, sub }: { theme: Theme; value: str
 export function ProTag({ theme }: { theme: Theme }) {
   return (
     <View style={[styles.pro, { borderColor: theme.inkFaint }]}>
-      <Text style={[styles.proText, { color: theme.inkSoft }]} maxFontSizeMultiplier={1.3}>
+      <Text style={[type.small, { color: theme.inkSoft }]} maxFontSizeMultiplier={1.3}>
         Pro
       </Text>
     </View>
@@ -334,58 +337,46 @@ export function ProTag({ theme }: { theme: Theme }) {
 export function Notice({ theme, text, bottom = 0 }: { theme: Theme; text: string | null; bottom?: number }) {
   if (!text) return null;
   return (
-    <View pointerEvents="none" style={[styles.noticeWrap, { bottom: bottom + 12 }]}>
-      <View style={[styles.notice, { backgroundColor: theme.raised, borderColor: theme.rule }]} accessibilityLiveRegion="polite" accessibilityRole="alert">
-        <Text style={[styles.noticeText, { color: theme.ink }]}>{text}</Text>
+    <View pointerEvents="none" style={[styles.noticeWrap, { bottom: bottom + space.m }]}>
+      <View style={[styles.notice, { backgroundColor: theme.raised, borderColor: theme.edge }]} accessibilityLiveRegion="polite" accessibilityRole="alert">
+        <Text style={[type.body, styles.center, { color: theme.ink }]}>{text}</Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  big: { borderRadius: radius.big, borderWidth: StyleSheet.hairlineWidth, paddingHorizontal: 24, paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
-  bigLabel: { fontFamily: fonts.display, fontSize: 30, lineHeight: 36, textAlign: 'center' },
-  bigSub: { fontSize: 16, marginTop: 4, opacity: 0.85, textAlign: 'center' },
+  center: { textAlign: 'center' },
+  shrink: { flexShrink: 1 },
+  underline: { textDecorationLine: 'underline' },
+  big: { borderRadius: radius.large, borderWidth: StyleSheet.hairlineWidth, paddingHorizontal: space.xl, paddingVertical: space.l, alignItems: 'center', justifyContent: 'center' },
   button: {
-    minHeight: 54,
-    borderRadius: radius.card,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
+    minHeight: 52,
+    borderRadius: radius.small,
+    borderWidth: 1,
+    paddingHorizontal: space.l,
+    paddingVertical: space.m,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: space.s,
   },
-  buttonCompact: { minHeight: 44, paddingVertical: 8, paddingHorizontal: 14 },
-  buttonLabel: { fontFamily: fonts.display, fontSize: 18, textAlign: 'center' },
+  buttonCompact: { minHeight: 44, paddingVertical: space.s, paddingHorizontal: space.m },
   link: { minHeight: 44, justifyContent: 'center' },
-  linkLabel: { fontSize: 17, textDecorationLine: 'underline', fontWeight: fonts.weight.medium },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, minHeight: 52 },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.s, minHeight: 52, borderBottomWidth: 1 },
   headerSide: { flex: 1, minHeight: 44, justifyContent: 'center' },
-  back: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 44, paddingRight: 8 },
-  backLabel: { fontSize: 17 },
-  headerTitle: { fontFamily: fonts.display, fontSize: 18, textAlign: 'center', flex: 2 },
-  screenTitleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 20, paddingRight: 10, paddingTop: 8, minHeight: 56 },
-  screenTitle: { fontFamily: fonts.display, fontSize: 28, lineHeight: 36, flexShrink: 1 },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, paddingHorizontal: 14, borderRadius: radius.chip, borderWidth: 1.5 },
-  chipLabel: { fontSize: 16, fontWeight: fonts.weight.medium },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  segment: { flexDirection: 'row', gap: 8 },
-  segmentItem: { flex: 1, minHeight: 56, borderRadius: radius.card, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6, paddingVertical: 8 },
+  back: { flexDirection: 'row', alignItems: 'center', gap: space.xs, minHeight: 44, paddingRight: space.s },
+  headerTitle: { textAlign: 'center', flex: 2 },
+  screenTitleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: space.l, paddingRight: space.s, paddingTop: space.s, minHeight: 56 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: space.xs, minHeight: 48, paddingHorizontal: space.l, borderRadius: radius.small, borderWidth: 1 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s },
+  segment: { flexDirection: 'row', gap: space.s },
+  segmentItem: { flex: 1, minHeight: 52, borderRadius: radius.small, borderWidth: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.xs, paddingVertical: space.s },
   segmentTall: { minHeight: 72 },
-  segmentLabel: { fontSize: 17, fontWeight: fonts.weight.semibold, textAlign: 'center' },
-  segmentLabelTall: { fontFamily: fonts.display, fontSize: 19, fontWeight: undefined },
-  card: { borderRadius: radius.card, borderWidth: StyleSheet.hairlineWidth, padding: 16 },
-  label: { fontSize: 15, fontWeight: fonts.weight.semibold, letterSpacing: 0.2, marginBottom: 10 },
-  numeral: { flex: 1, minWidth: 140, paddingVertical: 10 },
-  numeralValue: { fontFamily: fonts.number, fontSize: 44, lineHeight: 50 },
-  numeralLong: { fontSize: 32, lineHeight: 50 },
-  numeralLabel: { fontSize: 15, lineHeight: 20, marginTop: 2 },
-  numeralSub: { fontSize: 13, lineHeight: 18, marginTop: 2 },
-  pro: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 1 },
-  proText: { fontSize: 12, fontWeight: fonts.weight.semibold, letterSpacing: 0.4 },
-  noticeWrap: { position: 'absolute', left: 16, right: 16, alignItems: 'center' },
-  notice: { borderRadius: radius.card, borderWidth: StyleSheet.hairlineWidth, paddingHorizontal: 18, paddingVertical: 14, maxWidth: 520 },
-  noticeText: { fontSize: 16, lineHeight: 22, textAlign: 'center' },
+  card: { borderRadius: radius.large, borderWidth: 1, padding: space.l },
+  label: { marginBottom: space.s },
+  numeral: { flexGrow: 1, flexBasis: '40%', borderRadius: radius.large, borderWidth: 1, paddingHorizontal: space.l, paddingVertical: space.m },
+  pro: { borderWidth: 1, borderRadius: radius.small / 2, paddingHorizontal: space.xs },
+  noticeWrap: { position: 'absolute', left: space.l, right: space.l, alignItems: 'center' },
+  notice: { borderRadius: radius.large, borderWidth: 1, paddingHorizontal: space.l, paddingVertical: space.m, maxWidth: 520 },
 });

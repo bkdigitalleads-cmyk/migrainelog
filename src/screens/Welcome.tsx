@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
-import { useTheme, fonts, radius, Theme } from '../theme';
+import { useTheme, fonts, radius, space, type, Theme } from '../theme';
 import { useApp } from '../state';
 import { getOffering } from '../purchases';
 import { getTrialEligibleIds, trialLabel } from '../trial';
@@ -10,10 +9,9 @@ import { requestReminderPermission } from '../reminder';
 import { trialLength } from '../offer';
 import { medKindLabel, TRACKS } from '../labels';
 import type { Med, Track } from '../model';
-import { MonthAtAGlance, OneTap, ReportPage, TrialDays } from '../ui/Drawings';
 import Glyph from '../ui/Glyph';
 import { Button } from '../ui/Kit';
-import { Line, PickLine } from '../ui/Lines';
+import { Line, PickLine, Section } from '../ui/Lines';
 import { MedEditor } from './Meds';
 
 /**
@@ -68,11 +66,7 @@ export default function Welcome({ onDone }: { onDone: () => void }) {
   const next = () => (step < PAGES.length - 1 ? setStep(step + 1) : onDone());
 
   return (
-    <Page theme={theme} title={PAGES[step].title} line={PAGES[step].line} dots={{ count: PAGES.length, active: step }} button="Continue" onPress={next}>
-      {step === 0 && <OneTap theme={theme} />}
-      {step === 1 && <MonthAtAGlance theme={theme} />}
-      {step === 2 && <ReportPage theme={theme} />}
-    </Page>
+    <Page theme={theme} title={PAGES[step].title} line={PAGES[step].line} dots={{ count: PAGES.length, active: step }} button="Continue" onPress={next} />
   );
 }
 
@@ -83,17 +77,17 @@ export function TrackStep({ onDone }: { onDone: () => void }) {
   const { settings, updateSettings } = useApp();
   const [picked, setPicked] = useState<Track>(settings.track);
   return (
-    <View style={[styles.container, { backgroundColor: theme.bg, paddingBottom: Math.max(insets.bottom, 16) }]}>
-      <ScrollView contentContainerStyle={{ paddingTop: 36 }}>
-        <Text style={[styles.title, styles.padded, { color: theme.ink }]} accessibilityRole="header">
+    <View style={[styles.container, { backgroundColor: theme.bg, paddingBottom: Math.max(insets.bottom, space.l) }]}>
+      <ScrollView contentContainerStyle={styles.listPage}>
+        <Text style={[type.display, styles.padded, { color: theme.ink }]} accessibilityRole="header">
           What do you mostly track?
         </Text>
-        <Text style={[styles.line, styles.padded, { color: theme.inkSoft }]}>It only changes the words the app uses. You can change it later in Settings.</Text>
-        <View style={[styles.list, { borderTopColor: theme.rule }]}>
+        <Text style={[type.body, styles.padded, styles.line, { color: theme.inkSoft }]}>It only changes the words the app uses. You can change it later in Settings.</Text>
+        <Section theme={theme}>
           {TRACKS.map((t) => (
             <PickLine key={t.id} theme={theme} radio label={t.label} sub={t.sub} on={picked === t.id} onPress={() => setPicked(t.id)} />
           ))}
-        </View>
+        </Section>
       </ScrollView>
       <View style={styles.footer}>
         <Button
@@ -117,20 +111,20 @@ export function MedsStep({ onDone }: { onDone: () => void }) {
   const { meds } = useApp();
   const [editing, setEditing] = useState<Med | 'new' | null>(null);
   return (
-    <View style={[styles.container, { backgroundColor: theme.bg, paddingBottom: Math.max(insets.bottom, 16) }]}>
-      <ScrollView contentContainerStyle={{ paddingTop: 36 }}>
-        <Text style={[styles.title, styles.padded, { color: theme.ink }]} accessibilityRole="header">
+    <View style={[styles.container, { backgroundColor: theme.bg, paddingBottom: Math.max(insets.bottom, space.l) }]}>
+      <ScrollView contentContainerStyle={styles.listPage}>
+        <Text style={[type.display, styles.padded, { color: theme.ink }]} accessibilityRole="header">
           Add the medications you take.
         </Text>
-        <Text style={[styles.line, styles.padded, { color: theme.inkSoft }]}>
-          For attacks, and any preventive. Then logging a dose is one tap, and the report counts the days by type. You can skip this and add them any time.
+        <Text style={[type.body, styles.padded, styles.line, { color: theme.inkSoft }]}>
+          For attacks, and any preventive. Then a dose is one tap, and the report counts the days by type. You can skip this.
         </Text>
-        <View style={[styles.list, { borderTopColor: theme.rule }]}>
+        <Section theme={theme}>
           {meds.map((m) => (
             <Line key={m.id} theme={theme} label={m.name} sub={medKindLabel(m.kind)} onPress={() => setEditing(m)} />
           ))}
-        </View>
-        <View style={[styles.padded, { marginTop: 14 }]}>
+        </Section>
+        <View style={[styles.padded, styles.addOne]}>
           <Button theme={theme} glyph="plus" label="Add a medication" onPress={() => setEditing('new')} />
         </View>
       </ScrollView>
@@ -172,9 +166,7 @@ export function TrialSteps({ onDone }: { onDone: () => void }) {
 
   if (step === 'trial') {
     return (
-      <Page theme={theme} title={`Try it free for ${offer.length}.`} line={`Then ${offer.then}. Cancel in Settings any time before it ends.`} button="Continue" onPress={() => setStep('remind')} noPayment>
-        <FreeLabel theme={theme} text={`${offer.length} free`} />
-      </Page>
+      <Page theme={theme} title={`Try it free for ${offer.length}.`} line={`Then ${offer.then}. Cancel in Settings any time before it ends.`} button="Continue" onPress={() => setStep('remind')} noPayment />
     );
   }
 
@@ -192,30 +184,18 @@ export function TrialSteps({ onDone }: { onDone: () => void }) {
         setWaiting(false);
         onDone();
       }}
-    >
-      <TrialDays theme={theme} />
-    </Page>
+    />
   );
 }
 
-/** "3 days free" on a soft card, underlined by hand. */
-function FreeLabel({ theme, text }: { theme: Theme; text: string }) {
-  return (
-    <View style={[styles.label, { backgroundColor: theme.surface, borderColor: theme.rule }]} accessible accessibilityLabel={text}>
-      <Text style={[styles.labelText, { color: theme.ink }]}>{text}</Text>
-      <Svg width={200} height={14} viewBox="0 0 200 14">
-        <Path d="M4 8 C 50 3, 110 12, 196 5" stroke={theme.inkSoft} strokeWidth={3} fill="none" strokeLinecap="round" />
-      </Svg>
-    </View>
-  );
-}
-
-/** One idea per screen: the drawing, a short headline, the dots and the button. */
+/**
+ * One idea per screen, full-bleed: one large line, one line under it, the
+ * dots and Continue. No drawings; type and space carry it.
+ */
 function Page({
   theme,
   title,
   line,
-  children,
   dots,
   button,
   onPress,
@@ -225,7 +205,6 @@ function Page({
   theme: Theme;
   title: string;
   line?: string;
-  children: React.ReactNode;
   dots?: { count: number; active: number };
   button: string;
   onPress: () => void;
@@ -234,27 +213,26 @@ function Page({
 }) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.container, { backgroundColor: theme.bg, paddingBottom: Math.max(insets.bottom, 16) }]}>
-      <View style={styles.hero}>{children}</View>
+    <View style={[styles.container, { backgroundColor: theme.bg, paddingBottom: Math.max(insets.bottom, space.l) }]}>
       <View style={styles.words}>
-        <Text style={[styles.title, { color: theme.ink }]} accessibilityRole="header">
+        <Text style={[type.display, { color: theme.ink }]} accessibilityRole="header">
           {title}
         </Text>
-        {line ? <Text style={[styles.line, { color: theme.inkSoft }]}>{line}</Text> : null}
+        {line ? <Text style={[type.body, styles.line, { color: theme.inkSoft }]}>{line}</Text> : null}
       </View>
       {dots && (
         <View style={styles.dots} accessible accessibilityLabel={`Page ${dots.active + 1} of ${dots.count}`}>
           {Array.from({ length: dots.count }, (_, i) => (
-            <View key={i} style={[styles.dot, { backgroundColor: i === dots.active ? theme.inkSoft : theme.rule }, i === dots.active && { width: 22 }]} />
+            <View key={i} style={[styles.dot, { backgroundColor: i === dots.active ? theme.inkSoft : theme.rule }, i === dots.active && styles.dotOn]} />
           ))}
         </View>
       )}
       <View style={styles.footer}>
-        {waiting ? <ActivityIndicator color={theme.inkSoft} style={{ height: 54 }} /> : <Button theme={theme} live label={button} onPress={onPress} />}
+        {waiting ? <ActivityIndicator color={theme.inkSoft} style={styles.waiting} /> : <Button theme={theme} live label={button} onPress={onPress} />}
         {noPayment && (
           <View style={styles.noPaymentRow}>
             <Glyph name="check" size={18} color={theme.ink} weight={2.2} />
-            <Text style={[styles.noPayment, { color: theme.ink }]}>No payment now</Text>
+            <Text style={[type.heading, { color: theme.ink }]}>No payment now</Text>
           </View>
         )}
       </View>
@@ -265,17 +243,15 @@ function Page({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  hero: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
-  words: { paddingHorizontal: 28, paddingBottom: 18 },
-  padded: { paddingHorizontal: 24 },
-  title: { fontSize: 31, lineHeight: 38, fontFamily: fonts.display },
-  line: { fontSize: 17, lineHeight: 24, marginTop: 10 },
-  list: { marginTop: 22, borderTopWidth: StyleSheet.hairlineWidth },
-  dots: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 18 },
-  dot: { width: 9, height: 9, borderRadius: 5 },
-  footer: { paddingHorizontal: 20, gap: 10, paddingTop: 10 },
-  noPaymentRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  noPayment: { fontSize: 15, textAlign: 'center', fontWeight: fonts.weight.semibold },
-  label: { paddingHorizontal: 28, paddingTop: 22, paddingBottom: 16, borderWidth: StyleSheet.hairlineWidth, borderRadius: radius.card, alignItems: 'center', transform: [{ rotate: '-2deg' }] },
-  labelText: { fontFamily: fonts.display, fontSize: 50, lineHeight: 58 },
+  words: { flex: 1, justifyContent: 'center', paddingHorizontal: space.xl },
+  padded: { paddingHorizontal: space.l },
+  listPage: { paddingTop: space.xxl, paddingBottom: space.xl },
+  line: { marginTop: space.m },
+  addOne: { marginTop: space.l },
+  dots: { flexDirection: 'row', justifyContent: 'center', gap: space.s, marginBottom: space.l },
+  dot: { width: space.s, height: space.s, borderRadius: radius.round },
+  dotOn: { width: space.xl },
+  footer: { paddingHorizontal: space.l, gap: space.m, paddingTop: space.m },
+  waiting: { height: 52 },
+  noPaymentRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s },
 });

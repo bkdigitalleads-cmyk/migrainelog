@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme, fonts, radius } from '../theme';
+import { useTheme, fonts, radius, space, type } from '../theme';
 import { REPORT_FOOTER, rangeText, ReportModel } from '../report';
 import { medKindLabel } from '../labels';
 import { shortDate } from '../days';
@@ -44,8 +44,8 @@ export default function ReportPreview({
   return (
     <Modal visible={visible} animationType={MODAL_ANIMATION} presentationStyle="fullScreen" onRequestClose={onClose}>
       <View style={[styles.container, { backgroundColor: theme.bg, paddingTop: insets.top }]}>
-        <View style={[styles.header, { borderBottomColor: theme.rule }]}>
-          <Text style={[styles.headerTitle, { color: theme.ink }]} accessibilityRole="header">
+        <View style={[styles.header, { borderBottomColor: theme.edge }]}>
+          <Text style={[type.heading, { color: theme.ink }]} accessibilityRole="header">
             {sample ? 'Report preview' : 'Your report'}
           </Text>
           <IconButton theme={theme} glyph="close" label="Close the preview" onPress={onClose} color={theme.inkSoft} />
@@ -122,7 +122,7 @@ export default function ReportPreview({
           </View>
         </ScrollView>
 
-        <View style={[styles.bar, { borderTopColor: theme.rule, paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <View style={[styles.bar, { borderTopColor: theme.edge, paddingBottom: Math.max(insets.bottom, space.l) }]}>
           {sample ? (
             <Button theme={theme} live label="Share and print it with Pro" onPress={onLocked} />
           ) : (
@@ -164,11 +164,10 @@ function Row({ cells, head = false }: { cells: (string | number)[]; head?: boole
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 20, paddingRight: 8, minHeight: 56, borderBottomWidth: StyleSheet.hairlineWidth },
-  headerTitle: { fontFamily: fonts.display, fontSize: 20 },
-  note: { fontSize: 15, lineHeight: 21, textAlign: 'center', paddingHorizontal: 24, paddingTop: 12 },
-  scroll: { padding: 14, paddingBottom: 30 },
-  page: { backgroundColor: PAGE.bg, borderRadius: radius.chip / 2, paddingHorizontal: 18, paddingVertical: 22, overflow: 'hidden' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: space.l, paddingRight: space.s, minHeight: 56, borderBottomWidth: 1 },
+  note: { ...type.small, textAlign: 'center', paddingHorizontal: space.xl, paddingTop: space.m },
+  scroll: { padding: space.l, paddingBottom: space.xxl },
+  page: { backgroundColor: PAGE.bg, borderRadius: radius.small, paddingHorizontal: 18, paddingVertical: 22, overflow: 'hidden' },
   h1: { fontSize: 17, fontWeight: '700', color: PAGE.ink },
   meta: { fontSize: 10, color: PAGE.soft, marginTop: 2 },
   boxes: { flexDirection: 'row', gap: 6, marginTop: 12 },
@@ -188,6 +187,6 @@ const styles = StyleSheet.create({
   footerSmall: { fontSize: 8, color: PAGE.soft, textAlign: 'center', marginTop: 2 },
   watermarkLayer: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'space-around' },
   watermark: { fontFamily: fonts.display, fontSize: 78, letterSpacing: 6, color: 'rgba(35, 32, 38, 0.13)', transform: [{ rotate: '-28deg' }] },
-  bar: { paddingHorizontal: 16, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth },
-  pair: { flexDirection: 'row', gap: 10 },
+  bar: { paddingHorizontal: space.l, paddingTop: space.m, borderTopWidth: 1 },
+  pair: { flexDirection: 'row', gap: space.m },
 });
