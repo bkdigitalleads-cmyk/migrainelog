@@ -151,8 +151,8 @@ async function write() {
   const og = `<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
     <rect width="1200" height="630" fill="${ROOM}"/>
     <path d="${textPath(NUNITO, 'Migraine Log', 84, 470, 290)}" fill="${INK}"/>
-    <path d="${textPath(NUNITO, 'Headache tracker and doctor report', 38, 474, 360)}" fill="${SOFT}"/>
-    <path d="${textPath(NUNITO, 'for iPhone', 38, 474, 410)}" fill="${SOFT}"/>
+    <path d="${textPath(NUNITO, 'Migraine tracker for headaches', 38, 474, 360)}" fill="${SOFT}"/>
+    <path d="${textPath(NUNITO, 'Pain, symptom and medication log', 38, 474, 410)}" fill="${SOFT}"/>
   </svg>`;
   await sharp(Buffer.from(og)).composite([{ input: rounded, left: 120, top: 165 }]).png().toFile(out('docs/og-image.png'));
 }

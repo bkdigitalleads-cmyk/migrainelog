@@ -2,28 +2,28 @@
 
 Everything here is pasted into App Store Connect by Brian and Cowork. No em dashes anywhere, no brand words, no drug trademarks, no "Unlock", "Premium", "Seamless", "Effortless", "Welcome", "Let's" or exclamation marks.
 
-App record: bundle id com.bwk.migrainelog, Expo project bkdeveloper123/migrainelog. ASC app id, Expo projectId and the RevenueCat public key are still placeholders (eas.json `ascAppId`, app.json `extra.eas.projectId` and `extra.revenueCatApiKeyIos`, all starting `TODO_COWORK_`); Cowork fills them before the first build.
+App record: bundle id com.bwk.migrainelog, ASC app id 6827962061 (https://apps.apple.com/app/id6827962061, eas.json `ascAppId`), Expo project bkdeveloper123/migrainelog (projectId 3c447768-1e8c-409d-8dca-136dddd01f66, app.json `extra.eas.projectId`), RevenueCat public iOS key in app.json `extra.revenueCatApiKeyIos`.
 
 ## Name (30/30)
-Migraine Log: Headache Tracker
+Migraine Tracker for Headaches
 
-("Migraine & Headache Tracker" and "Migraine Tracker: Headache Log" are taken.) Home screen name (app.json `name`): Migraine Log
+Home screen name and in-app name (app.json `name`): Migraine Log. The names with Log or Tracker in both orders ("Migraine Log: Headache Tracker", "Migraine Tracker: Headache Log", "Migraine & Headache Tracker") were already taken in App Store Connect.
 
-## Subtitle (29/30)
-Symptom Diary & Doctor Report
+## Subtitle (30/30)
+Pain, Symptom & Medication Log
 
-## Keywords (96/100)
-migraines,headaches,pain,aura,trigger,medication,calendar,attack,relief,neurologist,journal,days
+## Keywords (98/100)
+health,medicine,aura,chronic,doctor,report,diary,journal,trigger,pill,calendar,relief,vertigo,days
 
-Rule: no word from the name or subtitle (migraine, log, headache, tracker, symptom, diary, doctor, report), no brand and no drug trademark. "migraines" and "headaches" are the plurals of name words; Apple says it matches plurals on its own, so they could be swapped for two new words later ("cluster" and "tension" are candidates) if Brian wants to test that in 1.0.1.
+Rule: no word from the name or subtitle (migraine, tracker, for, headaches, pain, symptom, medication, log), no brand and no drug trademark. Apple combines words across the name, subtitle and keywords, so "doctor report", "migraine diary", "headache journal", "pain relief", "medication calendar" and "pill tracker" are all covered without repeating a word.
 
-Research behind them (Oct 27 to 28): "migraine tracker" (Apple popularity 32), "headache tracker" (30), "symptom tracker" (34). Two strong incumbents; ranks 3 to 12 have 0 to 259 ratings.
+Research behind them (Oct 27 to 28): "migraine tracker" (Apple popularity 32), "headache tracker" (30), "medication tracker" (35), "symptom tracker" (34); in ASOMobile the diary, journal and log phrases sit at the popularity floor, so the name and subtitle carry the tracker phrases and diary and journal moved to the keywords. Two strong incumbents; ranks 3 to 12 have 0 to 259 ratings.
 
-## Promotional text (157/170)
-Tap once when an attack starts. Add details later. See headache days, migraine days and medication days, and bring your doctor a report. Nothing is uploaded.
+## Promotional text (170/170)
+Tap once when an attack starts. Add pain, symptoms and medications later. See your headache days and medication days, and bring your doctor a report. Nothing is uploaded.
 
 ## Description
-Log a migraine or headache in two seconds, see your headache days and medication days at a glance, and bring your doctor a report they can use. Migraine Log works offline, and nothing you log leaves your iPhone.
+Log a migraine or headache in two seconds, see your headache days and medication days at a glance, and bring your doctor a report they can use. Keep track of your pain, your symptoms and the medications you take, without typing when it hurts. Migraine Log works offline, and nothing you log leaves your iPhone.
 
 ONE TAP WHEN IT STARTS
 • One huge button, low on the screen where your thumb is: Attack started saves the time
@@ -86,7 +86,7 @@ Data Not Collected. Everything the person logs stays in the app's storage on the
 - `migraine_pro_weekly`: auto-renewing weekly, $4.99/week, 3-day free trial (introductory offer). RevenueCat package `$rc_weekly`. Preselected and listed first on the onboarding paywall.
 - `migraine_pro_yearly`: auto-renewing yearly, $29.99/year, no trial. RevenueCat package `$rc_annual`. Preselected and listed first on the in-app paywall as "Yearly, best value".
 - No lifetime product.
-- RevenueCat: entitlement `pro`, offering `default` with the two packages above. Public iOS key in app.json `extra.revenueCatApiKeyIos` (placeholder now; the app runs with purchases off until it starts with `appl_`).
+- RevenueCat: entitlement `pro`, offering `default` with the two packages above. Public iOS key in app.json `extra.revenueCatApiKeyIos` (set; the app runs with purchases off whenever it does not start with `appl_`).
 - Prices and trial text in the app always come from StoreKit.
 
 ## App Review note (paste into ASC, Notes)
@@ -105,7 +105,7 @@ To test: tap Attack started, tap Moderate, tap Attack over, then Add details. Op
 2. Calendar: October shaded by pain, headache-free rings, medication dots: "See your headache days at a glance"
 3. Monthly numbers: headache days, migraine days, 4-hour days and the triptan day count: "The numbers your doctor asks for"
 4. Doctor report: the report preview (Pro, no SAMPLE): "A one-page report for your doctor and insurer"
-5. Details later: the details screen with pain, symptoms and medication: "Add details when you feel better"
+5. Details later: the details screen with pain, symptoms and medication: "Pain, symptoms and medications, when you feel better"
 6. Private and offline: Home with an attack open in the dark theme, airplane mode in the status bar: "Private. Offline. Nothing leaves your phone"
 
 Renders of every screen are in docs/design/after for reference; the store shots come from a real device.
