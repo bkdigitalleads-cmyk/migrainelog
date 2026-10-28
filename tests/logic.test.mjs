@@ -346,6 +346,25 @@ test('labels: the track choice changes words only; the quick action follows the 
   assert.deepEqual(U.quickActionFor('tension', true), { id: 'end', title: 'Headache over' });
 });
 
+test('quick action: one dynamic item only, no static Info.plist item', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const app = JSON.parse(await readFile(new URL('../app.json', import.meta.url), 'utf8'));
+  const qa = app.expo.plugins.find((p) => p === 'expo-quick-actions' || (Array.isArray(p) && p[0] === 'expo-quick-actions'));
+  assert.equal(qa, 'expo-quick-actions');
+  assert.deepEqual(U.quickActionFor('migraine', true), { id: 'end', title: 'Attack over' });
+});
+
+test('started by mistake: Attack over less than 60 seconds after Attack started asks first', () => {
+  const t = Date.UTC(2026, 9, 28, 15, 23, 0);
+  assert.equal(U.MISTAKE_MS, 60_000);
+  assert.equal(U.looksLikeMistake(t, t), true); // the quick action twice: 0 min
+  assert.equal(U.looksLikeMistake(t, t + 1_000), true);
+  assert.equal(U.looksLikeMistake(t, t + 59_999), true);
+  assert.equal(U.looksLikeMistake(t, t + 60_000), false); // a full minute is a real attack
+  assert.equal(U.looksLikeMistake(t, t + 3 * 60_000), false); // 11:23 to 11:26
+  assert.equal(U.looksLikeMistake(t, t - 5_000), true); // an end before the start is never kept silently
+});
+
 // ---------- report ----------
 
 const meds = [

@@ -49,3 +49,11 @@ export function quickActionFor(track: Track, attackOpen: boolean): { id: 'start'
 
 /** The quick lengths on the details screen, in hours: short, the 4 hours that counts as long, all day. Anything else is Custom. */
 export const LENGTH_HOURS = [2, 4, 24];
+
+/** Attack over this soon after Attack started is probably a mistake (a double tap, the quick action twice). */
+export const MISTAKE_MS = 60_000;
+
+/** True when an attack ended less than a minute after it started: ask "Started by mistake?" before keeping it. */
+export function looksLikeMistake(startedAt: number, endedAt: number): boolean {
+  return endedAt - startedAt < MISTAKE_MS;
+}

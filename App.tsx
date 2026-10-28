@@ -6,9 +6,9 @@ import { useFonts } from 'expo-font';
 import * as QuickActions from 'expo-quick-actions';
 import { useTheme, FONT_FILES } from './src/theme';
 import { AppProvider, useApp, ONBOARDED_KEY } from './src/state';
-import { countAttacks, endAttack, kvGet, kvSet, startAttack } from './src/db';
-import { quickActionFor } from './src/rules';
-import HomeScreen from './src/screens/Home';
+import { countAttacks, deleteAttack, endAttack, kvGet, kvSet, startAttack } from './src/db';
+import { looksLikeMistake, quickActionFor } from './src/rules';
+import HomeScreen, { askStartedByMistake } from './src/screens/Home';
 import DetailsScreen from './src/screens/Details';
 import HistoryScreen from './src/screens/History';
 import CalendarScreen from './src/screens/Calendar';
@@ -42,6 +42,10 @@ function Shell() {
   const paywallOpened = useRef(false);
   const openRef = useRef(openAttack);
   openRef.current = openAttack;
+  const trackRef = useRef(settings.track);
+  trackRef.current = settings.track;
+  // One outside action at a time: a cold start can hand over the same quick action twice.
+  const outsideBusy = useRef(false);
 
   useEffect(() => {
     if (!ready || onboarded !== null) return;
@@ -73,19 +77,42 @@ function Shell() {
 
   /** From the quick action or the link: start one (never a second), or end the open one. */
   const fromOutside = async (what: 'start' | 'end') => {
-    setOver(null);
-    setTab('log');
-    const open = openRef.current;
-    if (what === 'start' && !open) {
-      startHaptic();
-      await startAttack(Date.now());
-      await refresh();
-      say('Saved with the time. Add details when you feel better.');
-    } else if (what === 'end' && open) {
-      doneHaptic();
-      await endAttack(open.id, Date.now());
-      await refresh();
-      say('Saved. Add details when you feel better.');
+    if (outsideBusy.current) return;
+    outsideBusy.current = true;
+    let asking = false;
+    try {
+      setOver(null);
+      setTab('log');
+      const open = openRef.current;
+      if (what === 'start' && !open) {
+        startHaptic();
+        await startAttack(Date.now());
+        await refresh();
+        say('Saved with the time. Add details when you feel better.');
+      } else if (what === 'end' && open) {
+        const at = Date.now();
+        const close = async () => {
+          doneHaptic();
+          await endAttack(open.id, at);
+          await refresh();
+          say('Saved. Add details when you feel better.');
+        };
+        if (!looksLikeMistake(open.startedAt, at)) await close();
+        else {
+          // Held until it is answered, so a second hand-over cannot ask twice.
+          asking = true;
+          const done = () => {
+            outsideBusy.current = false;
+          };
+          askStartedByMistake(
+            trackRef.current,
+            () => close().catch(() => {}).finally(done),
+            () => deleteAttack(open.id).then(() => refresh()).catch(() => {}).finally(done),
+          );
+        }
+      }
+    } finally {
+      if (!asking) outsideBusy.current = false;
     }
   };
 

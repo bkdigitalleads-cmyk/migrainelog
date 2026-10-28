@@ -5,12 +5,24 @@ import { useApp } from '../state';
 import { deleteAttack, endAttack, saveAttack, setFreeDay, setSeverity, startAttack } from '../db';
 import { dayKey, parseDay, timeLabel, whenShort } from '../days';
 import { coveredDays, durationMs, formatDuration, monthWindow, numbersFor } from '../insights';
-import { eveningDue } from '../rules';
+import { eveningDue, looksLikeMistake } from '../rules';
 import { overLabel, plural, SEVERITIES, startLabel, noun } from '../labels';
-import type { Severity } from '../model';
+import type { Severity, Track } from '../model';
 import { BigAction, Button, Card, IconButton, Label, Press, ScreenTitle, Segment, TextLink } from '../ui/Kit';
 import Glyph from '../ui/Glyph';
 import { doneHaptic, startHaptic } from '../ui/motion';
+
+/**
+ * Attack over less than a minute after Attack started (a double tap, the
+ * quick action twice): "Started by mistake?" Delete removes it and nothing
+ * else is shown; Keep saves it as it is.
+ */
+export function askStartedByMistake(track: Track, onKeep: () => void, onDelete: () => void): void {
+  Alert.alert('Started by mistake?', `This ${noun(track)} started less than a minute ago.`, [
+    { text: 'Delete', style: 'destructive', onPress: onDelete },
+    { text: 'Keep', style: 'cancel', onPress: onKeep },
+  ]);
+}
 
 /**
  * Home. The attack button is the hero: centered in the free space, with a
@@ -60,17 +72,32 @@ export default function HomeScreen({
     }
   };
 
-  const onOver = async () => {
-    if (busy || !openAttack) return;
+  const close = async (id: number, at: number) => {
     setBusy(true);
     doneHaptic();
     try {
-      await endAttack(openAttack.id, Date.now());
-      setJustClosed(openAttack.id);
+      await endAttack(id, at);
+      setJustClosed(id);
       await refresh();
     } finally {
       setBusy(false);
     }
+  };
+
+  const onOver = () => {
+    if (busy || !openAttack) return;
+    const { id, startedAt } = openAttack;
+    const at = Date.now();
+    if (!looksLikeMistake(startedAt, at)) return close(id, at);
+    askStartedByMistake(
+      track,
+      () => close(id, at),
+      async () => {
+        await deleteAttack(id);
+        setJustClosed(null);
+        await refresh();
+      },
+    );
   };
 
   const onSeverity = async (s: Severity | null) => {

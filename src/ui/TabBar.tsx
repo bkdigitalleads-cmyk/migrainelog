@@ -34,11 +34,10 @@ export default function TabBar({ theme, tab, onTab, proTabs = [] }: { theme: The
             accessibilityLabel={proTabs.includes(t.id) ? `${t.label}, Pro` : t.label}
           >
             <Glyph name={t.glyph} size={26} color={color} weight={on ? 2.1 : 1.8} />
-            <View style={styles.labelRow}>
-              <Text style={[type.small, { color }]} numberOfLines={1} maxFontSizeMultiplier={1.2} adjustsFontSizeToFit>
-                {t.label}
-              </Text>
-            </View>
+            {/* Full tab width and a floor on the shrink: at the largest text sizes the labels collapsed to marks. */}
+            <Text style={[type.small, styles.label, { color }]} numberOfLines={1} maxFontSizeMultiplier={1.3} adjustsFontSizeToFit minimumFontScale={0.75}>
+              {t.label}
+            </Text>
           </Press>
         );
       })}
@@ -49,5 +48,5 @@ export default function TabBar({ theme, tab, onTab, proTabs = [] }: { theme: The
 const styles = StyleSheet.create({
   bar: { flexDirection: 'row', borderTopWidth: 1, paddingTop: space.s },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 52, gap: space.xs },
-  labelRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  label: { alignSelf: 'stretch', textAlign: 'center' },
 });

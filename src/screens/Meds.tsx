@@ -152,7 +152,7 @@ export function MedEditor({
         <TextInput
           value={f.name}
           onChangeText={(name) => set({ name })}
-          placeholder="As it is on the box"
+          placeholder="For example, Sumatriptan 50 mg"
           placeholderTextColor={theme.inkFaint}
           style={[styles.input, { color: theme.ink, backgroundColor: theme.raised, borderColor: theme.edge }]}
           keyboardAppearance={theme.isDark ? 'dark' : 'light'}

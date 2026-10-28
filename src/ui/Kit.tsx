@@ -214,7 +214,7 @@ export function ScreenTitle({ theme, title, right }: { theme: Theme; title: stri
 }
 
 /** A tag you tap on and off. */
-export function Chip({ theme, label, on, onPress, hint }: { theme: Theme; label: string; on: boolean; onPress: () => void; hint?: string }) {
+export function Chip({ theme, label, sub, on, onPress, hint }: { theme: Theme; label: string; sub?: string; on: boolean; onPress: () => void; hint?: string }) {
   return (
     <Press
       onPress={() => {
@@ -223,15 +223,22 @@ export function Chip({ theme, label, on, onPress, hint }: { theme: Theme; label:
       }}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: on }}
-      accessibilityLabel={label}
+      accessibilityLabel={sub ? `${label}, ${sub}` : label}
       accessibilityHint={hint}
-      style={[styles.chip, { backgroundColor: on ? theme.picked : theme.raised, borderColor: on ? theme.pickedEdge : theme.edge }]}
+      style={[styles.chip, sub != null && styles.chipTwoLines, { backgroundColor: on ? theme.picked : theme.raised, borderColor: on ? theme.pickedEdge : theme.edge }]}
       pressedStyle={{ opacity: 0.7 }}
     >
       {on && <Glyph name="check" size={16} color={theme.ink} weight={2.2} />}
-      <Text style={[type.body, { color: on ? theme.ink : theme.inkSoft }]} maxFontSizeMultiplier={1.6}>
-        {label}
-      </Text>
+      <View>
+        <Text style={[type.body, { color: on ? theme.ink : theme.inkSoft }]} maxFontSizeMultiplier={1.6}>
+          {label}
+        </Text>
+        {sub ? (
+          <Text style={[type.small, { color: theme.inkFaint }]} maxFontSizeMultiplier={1.6}>
+            {sub}
+          </Text>
+        ) : null}
+      </View>
     </Press>
   );
 }
@@ -369,6 +376,7 @@ const styles = StyleSheet.create({
   headerTitle: { textAlign: 'center', flex: 2 },
   screenTitleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: space.l, paddingRight: space.s, paddingTop: space.s, minHeight: 56 },
   chip: { flexDirection: 'row', alignItems: 'center', gap: space.xs, minHeight: 48, paddingHorizontal: space.l, borderRadius: radius.small, borderWidth: 1 },
+  chipTwoLines: { paddingVertical: space.s },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s },
   segment: { flexDirection: 'row', gap: space.s },
   segmentItem: { flex: 1, minHeight: 52, borderRadius: radius.small, borderWidth: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.xs, paddingVertical: space.s },

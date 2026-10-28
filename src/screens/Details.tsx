@@ -379,7 +379,7 @@ export default function DetailsScreen({ attackId, day, onClose }: { attackId: nu
                 <Label theme={theme}>{draft.doses.length > 0 ? 'Add another' : 'Tap one to add it'}</Label>
                 <Chips>
                   {pickable.map((m) => (
-                    <Chip key={m.id} theme={theme} label={m.name} on={false} onPress={() => addDose(m.id)} hint={`Adds a dose of ${m.name}`} />
+                    <Chip key={m.id} theme={theme} label={m.name} sub={medKindShort(m.kind)} on={false} onPress={() => addDose(m.id)} hint={`Adds a dose of ${m.name}`} />
                   ))}
                 </Chips>
               </>

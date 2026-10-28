@@ -12,7 +12,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.bwk.migrainelog",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "LSApplicationCategoryType": "public.app-category.medical"
@@ -47,18 +47,7 @@
           }
         }
       ],
-      [
-        "expo-quick-actions",
-        {
-          "iosActions": [
-            {
-              "id": "start",
-              "title": "Attack started",
-              "icon": "symbol:waveform.path"
-            }
-          ]
-        }
-      ],
+      "expo-quick-actions",
       "@react-native-community/datetimepicker",
       "./plugins/withoutPushEntitlement"
     ],

@@ -52,7 +52,7 @@ export default function When({
             mode="time"
             display="compact"
             onChange={pick}
-            minuteInterval={5}
+            minuteInterval={1}
             themeVariant={variant}
             accentColor={theme.live}
             accessibilityLabel={`${label}, time`}
