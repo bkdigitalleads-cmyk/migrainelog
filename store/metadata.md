@@ -1,4 +1,4 @@
-# Migraine Log, App Store metadata (1.0.0)
+# Migraine Log, App Store metadata (1.0.1)
 
 Everything here is pasted into App Store Connect by Brian and Cowork. No em dashes anywhere, no brand words, no drug trademarks, no "Unlock", "Premium", "Seamless", "Effortless", "Welcome", "Let's" or exclamation marks.
 
@@ -12,10 +12,12 @@ Home screen name and in-app name (app.json `name`): Migraine Log. The names with
 ## Subtitle (30/30)
 Pain, Symptom & Medication Log
 
-## Keywords (98/100)
-health,medicine,aura,chronic,doctor,report,diary,journal,trigger,pill,calendar,relief,vertigo,days
+## Keywords (99/100)
+health,medicine,aura,chronic,doctor,report,diary,journal,trigger,pill,calendar,illness,vertigo,days
 
-Rule: no word from the name or subtitle (migraine, tracker, for, headaches, pain, symptom, medication, log), no brand and no drug trademark. Apple combines words across the name, subtitle and keywords, so "doctor report", "migraine diary", "headache journal", "pain relief", "medication calendar" and "pill tracker" are all covered without repeating a word.
+(1.0.1, Nov 2026: "relief" became "illness". The 1.0 list was health,medicine,aura,chronic,doctor,report,diary,journal,trigger,pill,calendar,relief,vertigo,days, 98.)
+
+Rule: no word from the name or subtitle (migraine, tracker, for, headaches, pain, symptom, medication, log), no brand and no drug trademark. Apple combines words across the name, subtitle and keywords, so "doctor report", "migraine diary", "headache journal", "chronic illness", "medication calendar" and "pill tracker" are all covered without repeating a word.
 
 Research behind them (Oct 27 to 28): "migraine tracker" (Apple popularity 32), "headache tracker" (30), "medication tracker" (35), "symptom tracker" (34); in ASOMobile the diary, journal and log phrases sit at the popularity floor, so the name and subtitle carry the tracker phrases and diary and journal moved to the keywords. Two strong incumbents; ranks 3 to 12 have 0 to 259 ratings.
 
@@ -64,8 +66,24 @@ Free, always: logging and editing attacks, headache-free days, this month's cale
 Terms of Use (EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 Privacy Policy: https://bkdigitalleads-cmyk.github.io/migrainelog/privacy.html
 
-## What's New (1.0.0)
-First version. Log an attack in one tap, add details later, mark headache-free days, and make a report for your doctor, all on your iPhone.
+## What's New (1.0.1)
+Small fixes and improvements.
+
+1.0.0: First version. Log an attack in one tap, add details later, mark headache-free days, and make a report for your doctor, all on your iPhone.
+
+## Spanish (Mexico) localization (es-MX)
+A second locale with its own name, subtitle and keywords, so the app can be found for more phrases. The text stays in English, like the app. Paste into App Store Connect under Spanish (Mexico); description, promotional text, What's New and screenshots can be the English ones.
+
+Name (28/30): Headache Diary: Migraine Log
+
+Subtitle (28/30): Symptom, Pain & Pill Tracker
+
+Keywords (99/100):
+health,medication,chronic,illness,journal,cluster,tension,sinus,aura,vertigo,doctor,report,calendar
+
+Rule: no word from this locale's name or subtitle (headache, diary, migraine, log, symptom, pain, pill, tracker), no brand and no drug trademark.
+
+What's New (1.0.1): Small fixes and improvements.
 
 ## Category
 Primary: Medical. Secondary: Health & Fitness.
@@ -79,7 +97,7 @@ Every content question is None, except:
 If Brian wants 4+, the case for answering "None" is that every medical word in the app is the person's own entry or a label for it and the app gives no advice. We recommend the honest answer above and accepting 12+/13+; ask Brian before choosing.
 
 ## App Privacy (nutrition label)
-Data Not Collected. Everything the person logs stays in the app's storage on the device and is never uploaded; there is no account and no analytics. RevenueCat validates purchases with an anonymous app user id and purchase history; answer the purchase questions the same way as for Image to Text, Pumping and Odo.
+Purchases (purchase history), used for App Functionality, not linked to you, not used for tracking. That is the only data type: RevenueCat keeps the purchase history it validates purchases with (an anonymous app user id, no account). Everything the person logs stays in the app's storage on the device and is never uploaded; there are no analytics. (Before 1.0.1 this file said Data Not Collected; the label in App Store Connect now lists Purchases.)
 
 ## Pricing and RevenueCat
 - Subscription group "Migraine Log Pro".

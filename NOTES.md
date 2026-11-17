@@ -2,6 +2,17 @@
 
 Newest first. One entry per commit: date, version/build, what changed and why, and how it was checked.
 
+- 2026-11-17: 1.0.1 build 3 (version 1.0.0 to 1.0.1, ios.buildNumber 2 to 3; branch claude/migraine-1.0.1 from main at 402980c, PR to main, not merged, no build). A keywords release: the live App Store version is 1.0, and this one exists to ship new keywords and a Spanish (Mexico) locale. No feature, design or code changes.
+  - Keywords (English): health,medicine,aura,chronic,doctor,report,diary,journal,trigger,pill,calendar,illness,vertigo,days (99; "relief" became "illness"). No word repeats the name or subtitle.
+  - New Spanish (Mexico) locale in store/metadata.md, text in English like the app: name "Headache Diary: Migraine Log" (28), subtitle "Symptom, Pain & Pill Tracker" (28), keywords health,medication,chronic,illness,journal,cluster,tension,sinus,aura,vertigo,doctor,report,calendar (99), with no word from that locale's name or subtitle.
+  - What's New (1.0.1): "Small fixes and improvements."
+  - Privacy label: App Store Connect now lists Purchases (purchase history), used for App Functionality, not linked to the user, because RevenueCat keeps purchase history. store/metadata.md and docs/privacy.html said Data Not Collected; both now describe the label as it is, and privacy.html is dated November 16, 2026. Nothing the person logs is collected or leaves the phone; that did not change.
+  - Tests: none pins the version or build number, so none changed.
+  - Checked: npx tsc --noEmit clean; npm test 30 pass; counts measured with node (99, 99, 28, 28); git grep finds no em dashes in the changed files.
+  - Merging this PR to main touches app.json, so the EAS workflow will build 1.0.1 build 3 (a paid build). Brian decides when.
+  - Noticed, not changed:
+    - CLAUDE.md still says "Not in the store yet" and describes build 2 as the latest; the app is live as 1.0. Left for Brian to confirm which build is live before the status line is rewritten.
+    - package.json "version" stays 1.0.0; it is the npm package version, not the app version, and nothing reads it.
 - 2026-10-28: 1.0.0 build 2 (version stays 1.0.0, ios.buildNumber 1 to 2), committed straight to main at Brian's request so the EAS workflow builds it. Fixes from Brian's TestFlight pass of build 1 (81 screenshots and the PDF); nothing else changed. purchases.ts, product ids, gates, the schema, the rating triggers, the name, subtitle and keywords untouched.
   - Quick action, one item: the long-press menu listed the static Info.plist item ("Attack started") and the dynamic one together, so it showed "Attack started" twice when idle and "Attack started" plus "Attack over" during an attack. The static item is gone (app.json plugins now list plain "expo-quick-actions", which adds nothing to Info.plist); the dynamic item that App.tsx sets at every launch and whenever an attack opens or closes is the only one, "Attack started" idle and "Attack over" while one is open (in the person's words for tension headaches). Kept the dynamic one because it follows the state and Brian confirmed it works from a cold start; iOS keeps the dynamic item between launches, so only a fresh install shows no item until its first launch.
   - Pickers: the time picker (src/ui/When.tsx, used for start, end, a past attack and a dose's taken time) had minuteInterval 5, so 11:23 showed as 11:20. Now 1, to the minute. Stored values were always right.
